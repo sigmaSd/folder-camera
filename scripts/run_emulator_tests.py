@@ -18,13 +18,18 @@ avdmanager = sdk/'cmdline-tools/latest/bin/avdmanager'
 adb = sdk/'platform-tools/adb'
 image = f'system-images;android-{args.api};{args.target};x86_64'
 subprocess.run([str(manager), image, 'emulator', 'platform-tools'], check=True)
-subprocess.run([str(avdmanager), 'create', 'avd', '--force', '--name', 'folder-camera-tests', '--package', image, '--device', 'pixel_7'], input='no\n', text=True, check=True)
-avd = Path(os.environ.get('ANDROID_AVD_HOME', str(Path.home()/'.android/avd')))/'folder-camera-tests.avd/config.ini'
+avd_home = work/'avds'
+android_home = work/'android-home'
+avd_home.mkdir(exist_ok=True); android_home.mkdir(exist_ok=True)
+environment = {**os.environ, 'ANDROID_AVD_HOME': str(avd_home), 'ANDROID_USER_HOME': str(android_home)}
+avd_path = avd_home/'folder-camera-tests.avd'
+subprocess.run([str(avdmanager), 'create', 'avd', '--force', '--name', 'folder-camera-tests', '--package', image, '--device', 'pixel_7', '--path', str(avd_path)], input='no\n', text=True, check=True, env=environment)
+avd = avd_path/'config.ini'
 with avd.open('a') as out:
     out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\n')
 subprocess.run([str(adb), 'start-server'], check=True)
 log = (work/'emulator.log').open('w')
-process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT)
+process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
 def shell(*arguments):
     return subprocess.run([str(adb), '-s', 'emulator-5554', 'shell', *arguments], capture_output=True, text=True)
 try:

@@ -20,7 +20,7 @@ Builds:
   - versionName: '1.0.0'
     versionCode: 4
     commit: v1.0.0
-    subdir: android
+    subdir: android/app
     gradle:
       - yes
 
