@@ -30,21 +30,10 @@ jobs:
       - name: Enable runner KVM
         run: |
           sudo chmod 666 /dev/kvm
+      - name: Build test APKs before starting the emulator
+        run: android/gradlew -p android :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon
       - name: Native tests and screenshots
-        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: ${{ matrix.api }}
-          system-image-api-level: ${{ matrix.image }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: pixel_7
-          ram-size: 2048M
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back emulated
-          disable-animations: true
-          script: |
-            android/gradlew -p android :app:connectedDebugAndroidTest --no-daemon
-            mkdir -p .work/screenshots
-            adb pull /sdcard/Android/data/io.github.sigmasd.foldercamera.debug/files/store-screenshots .work/screenshots
+        run: python3 scripts/run_emulator_tests.py --api '${{ matrix.image }}' --target '${{ matrix.target }}'
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -53,4 +42,5 @@ jobs:
             android/app/build/reports/androidTests/
             android/app/build/outputs/androidTest-results/
             .work/screenshots/
+            .work/emulator/
           retention-days: 30

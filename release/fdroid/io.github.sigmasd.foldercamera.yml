@@ -23,9 +23,6 @@ Builds:
     subdir: android
     gradle:
       - yes
-    scandelete:
-      - app/src/androidTest/assets
-      - app/src/test/resources
 
 AutoUpdateMode: Version v%v
 UpdateCheckMode: Tags ^v[0-9.]+$
