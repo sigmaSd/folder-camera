@@ -41,7 +41,8 @@ try:
         package = shell('service', 'check', 'package')
         input_service = shell('service', 'check', 'input')
         settings = shell('service', 'check', 'settings')
-        if boot.stdout.strip() == '1' and all('found' in r.stdout and 'not found' not in r.stdout for r in [package, input_service, settings]):
+        provider = shell('settings', 'get', 'global', 'device_provisioned')
+        if boot.stdout.strip() == '1' and provider.returncode == 0 and 'Exception' not in provider.stderr and provider.stdout.strip() in ('0','1','null') and all('found' in r.stdout and 'not found' not in r.stdout for r in [package, input_service, settings]):
             print('Android boot property AND package/input/settings services are ready.', flush=True)
             break
         time.sleep(2)

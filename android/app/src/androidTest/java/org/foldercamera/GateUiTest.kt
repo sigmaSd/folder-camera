@@ -23,6 +23,7 @@ class GateUiTest {
         }
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("Projects/Job A/Before")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
         rule.onNodeWithText("Start camera").performClick()
         rule.onNodeWithText("Projects/Job A/Before").assertExists()
         rule.onNodeWithContentDescription("Change folder").performClick()
@@ -33,6 +34,7 @@ class GateUiTest {
         rule.onNodeWithContentDescription("Change folder").performClick()
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("New/صور")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
         rule.onNodeWithText("Start camera").performClick()
         rule.onNodeWithText("New/صور").assertExists()
         rule.activityRule.scenario.recreate()

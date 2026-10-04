@@ -23,6 +23,7 @@ class StoreScreenshotsTest {
         instrumentation.uiAutomation.grantRuntimePermission(context.packageName, "android.permission.CAMERA")
         val app = context.applicationContext as FolderCameraApp
         val tree = DocumentsContract.buildTreeDocumentUri(TestDocumentsProvider.AUTHORITY, "root").toString()
+        context.grantUriPermission(context.packageName, android.net.Uri.parse(tree), android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION or android.content.Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
         runBlocking {
             app.db.clearAllTables()
             File(context.filesDir, "test-documents").deleteRecursively()

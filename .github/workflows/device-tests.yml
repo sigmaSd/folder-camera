@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: ['android/**', '.github/workflows/device-tests.yml']
+    paths: ['android/**', 'scripts/run_emulator_tests.py', '.github/workflows/device-tests.yml']
 permissions:
   contents: read
 jobs:
@@ -42,5 +42,5 @@ jobs:
             android/app/build/reports/androidTests/
             android/app/build/outputs/androidTest-results/
             .work/screenshots/
-            .work/emulator/
+            .work/emulator/*.log
           retention-days: 30

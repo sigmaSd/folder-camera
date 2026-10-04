@@ -20,6 +20,7 @@ class RecoveryTest {
     @Before fun setup() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
         TestDocumentsProvider.denyAccess = false; TestDocumentsProvider.denyWrites = false; TestDocumentsProvider.denyReads = false
+        context.grantUriPermission(context.packageName, android.net.Uri.parse(tree), android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION or android.content.Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
         File(context.filesDir, "test-documents").deleteRecursively()
         db = Room.inMemoryDatabaseBuilder(context, CameraDatabase::class.java).build()
     }
@@ -36,15 +37,15 @@ class RecoveryTest {
         TestDocumentsProvider.denyAccess = false; TestDocumentsProvider.denyWrites = true
         PhotoStore(context, db.dao()).reconcile(); assertEquals("LOCAL_FAILED", db.dao().capture(c.photoId)!!.state)
         TestDocumentsProvider.denyWrites = false; PhotoStore(context, db.dao()).reconcile()
-        val saved = db.dao().capture(c.photoId)!!; assertEquals("SAVED", saved.state); assertFalse(File(c.stagingPath!!).exists())
+        val saved = db.dao().capture(c.photoId)!!; assertEquals(saved.toString(), "SAVED", saved.state); assertFalse(File(c.stagingPath!!).exists())
         assertTrue(File(context.filesDir, "test-documents/${c.relativePath}/${c.filename}").exists())
     }
     @Test fun completedCopyBeforeStateCommitRecoversWithoutDuplicate() = runBlocking {
         val c = staged(receiver = "receiver-one"); TestDocumentsProvider.denyReads = true
         PhotoStore(context, db.dao()).persist(c.photoId)
-        val failed = db.dao().capture(c.photoId)!!; assertEquals("LOCAL_FAILED", failed.state); assertNotNull(failed.destinationDocumentUri)
+        val failed = db.dao().capture(c.photoId)!!; assertEquals("LOCAL_FAILED", failed.state); assertNotNull(failed.toString(), failed.destinationDocumentUri)
         TestDocumentsProvider.denyReads = false; PhotoStore(context, db.dao()).reconcile()
-        val saved = db.dao().capture(c.photoId)!!; assertEquals("SAVED", saved.state); assertEquals(failed.destinationDocumentUri, saved.destinationDocumentUri)
+        val saved = db.dao().capture(c.photoId)!!; assertEquals(saved.toString(), "SAVED", saved.state); assertEquals(failed.destinationDocumentUri, saved.destinationDocumentUri)
         assertEquals(1, File(context.filesDir, "test-documents/${c.relativePath}").listFiles()!!.size)
         assertEquals(1, db.dao().outstanding("receiver-one"))
         PhotoStore(context, db.dao()).reconcile(); assertEquals(1, db.dao().outstanding("receiver-one"))
@@ -55,7 +56,7 @@ class RecoveryTest {
         PhotoStore(context, db.dao()).reconcile(); assertEquals("LOCAL_FAILED", db.dao().capture(interrupted.photoId)!!.state)
         assertTrue(File(interrupted.stagingPath!!).exists())
         val complete = staged(); store.persist(complete.photoId)
-        assertEquals("SAVED", db.dao().capture(complete.photoId)!!.state); assertNull(db.dao().claim("receiver-one", Long.MAX_VALUE / 2))
+        assertEquals(db.dao().capture(complete.photoId).toString(), "SAVED", db.dao().capture(complete.photoId)!!.state); assertNull(db.dao().claim("receiver-one", Long.MAX_VALUE / 2))
     }
     @Test fun reopeningFolderNeverOverwritesAndNamesStayStable() = runBlocking {
         val first = staged(); val second = staged()
