@@ -1,0 +1,23 @@
+Folder Camera automatic receiver startup — 2026-10-04 Africa/Tunis
+
+Normal new-receiver command: cd receiver && deno task start
+
+Implemented:
+- Private LAN address detection from local interfaces/Linux default route; no internet probe.
+- Known VPN/container/tunnel exclusion, IPv4 preference, route-metric ordering and no-route fallback.
+- Default ~/Captures destination and persistent XDG state directory.
+- Root, bind preference and successful port remembered in private receiver-config.json.
+- Busy automatic port advances; explicit port stays exact.
+- First-use pairing QR appears automatically; paired identities/certificates remain stable.
+- Legacy upload profiles with no recorded root require that original root once rather than guessing.
+
+Checks:
+Type check: PASS
+Lint: PASS
+Format: PASS
+Receiver tests: PASS (16 tests, zero failures)
+CLI smoke PASS: remembered root/bind/port with no flags, default XDG state, offline cached startup, QR generation, HTTPS pairing, Unicode upload, idempotent retry, durable restart, state lock, revocation, safe legacy-root migration. Only development fixture used.
+PASS: actual automatic LAN detection, no startup flags, first-use QR, occupied-port fallback, remembered destination/port, verified HTTPS upload and restart. Dummy JPEG only.
+
+Integration listeners used isolated project-local state/destinations and generated dummy JPEGs; they were shut down after tests.
+No production state, existing photo roots or system firewall rules were modified. Android was unchanged for this receiver-only update.

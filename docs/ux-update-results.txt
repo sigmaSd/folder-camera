@@ -1,0 +1,31 @@
+Folder Camera UX update — 2026-10-04 (Africa/Tunis)
+
+Receiver:
+- --state defaults to absolute XDG_STATE_HOME/folder-camera or ~/.local/state/folder-camera; explicit overrides retain existing custom identities.
+- deno check, lint, format and eleven receiver tests: PASS.
+- Actual CLI smoke without --state: PASS (isolated XDG state, offline cached startup, QR, pairing, upload, retry, restart, state lock, revocation).
+
+Android:
+- Complete searchable Paths catalog, empty directories/ancestors, lazy rows and subfolder navigation; no twenty-item cap.
+- Warm neutral/teal interface, grouped settings, larger dark camera preview.
+- Off/Auto/Flash/Always-on CameraX light modes; pinch and bounded slider zoom.
+- 0.2.1 reserves font-scaled status space so Saving locally does not move preview/zoom/shutter.
+- 0.2.0 debug/unsigned-release builds and lint: PASS.
+- 0.2.1 debug build and lint: PASS.
+
+org.foldercamera.CoreTest: 4 tests, 0 failures
+org.foldercamera.FolderPathsTest: 2 tests, 0 failures
+org.foldercamera.HostRecoveryTest: 6 tests, 0 failures
+org.foldercamera.TlsTest: 1 tests, 0 failures
+
+Physical phone observations:
+- Folder Camera 0.2.0 installed successfully via ADB on model 2409BRN2CA, Android API 36.
+- Paths screen visually inspected at 720×1640; prior root, paths and saved-photo metadata remained available.
+- Camera preview started; active CameraX client, light selector and zoom slider observed. No shutter action was performed by the agent.
+- Folder Camera 0.2.1 saving-layout fix installed successfully via ADB; existing data preserved.
+- User confirmed the new features/UI work, and reported the saving-status layout jump; fixed in 0.2.1.
+- Full instrumented acceptance suite, Android-17 LAN permission and phone-to-PC LAN recovery are not claimed.
+
+Current debug APK:
+android/app/build/outputs/apk/debug/app-debug.apk
+SHA-256: 528c4c3d9c71a07d30904ffb5e00c83b0be138d3f494c8e07443a3c5e94aaa32

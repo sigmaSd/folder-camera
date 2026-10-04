@@ -1,0 +1,28 @@
+Folder Camera verification — 2026-10-04 Africa/Tunis
+
+Android: assembleDebug, assembleRelease (unsigned), assembleDebugAndroidTest, testDebugUnitTest, lintDebug: PASS
+Command: ./gradlew :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest :app:testDebugUnitTest :app:lintDebug --no-daemon --write-locks
+
+org.foldercamera.CoreTest: 4 tests, 0 failures, 0 errors
+org.foldercamera.HostRecoveryTest: 5 tests, 0 failures, 0 errors
+org.foldercamera.TlsTest: 1 tests, 0 failures, 0 errors
+Android total: 10 host tests, zero failures.
+
+0 errors, 26 warnings
+
+Receiver: deno task check, lint, fmt --check: PASS
+Receiver: deno task test: 10 tests, zero failures.
+CLI smoke PASS: offline cached startup, QR generation, HTTPS pairing, Unicode upload, idempotent retry, durable restart, state lock, revocation. Only development fixture used.
+
+Device instrumentation: BLOCKED — No connected devices; emulator SIGSEGV before ADB with both tested graphics configurations.
+Physical camera / Android 17 LAN permission / actual phone-to-PC LAN / firewall / full-disk / Windows: NOT VERIFIED.
+
+android/app/build/outputs/apk/debug/app-debug.apk
+  bytes=18416451
+  sha256=40ab296076f6e64aa8548dac3b386c56cff8073c17c40369091a7627d5c61d46
+android/app/build/outputs/apk/release/app-release-unsigned.apk
+  bytes=12985527
+  sha256=9909959efd598d617401a1240ae511605d112b8e9fd30f6b410d1d0d8e0277fd
+android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+  bytes=1133794
+  sha256=8a7ccbb5cee41a1acaa537af10dec61403e15cc8e3174f06ff67aa2a2c2beacf

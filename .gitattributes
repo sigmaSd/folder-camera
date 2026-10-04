@@ -1,0 +1,6 @@
+* text=auto
+android/gradlew text eol=lf
+android/gradlew.bat text eol=crlf whitespace=cr-at-eol
+# Preserve upstream legal notices and the supplied specification verbatim.
+third_party/licenses/** -text -whitespace
+SPEC.md -text -whitespace

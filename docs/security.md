@@ -1,0 +1,33 @@
+# Security and recovery decisions
+
+## Receiver boundary
+
+The initial supported host is Linux. Roots, parents, destination ancestors, state files and destination files are lstat/realPath checked, existing symlinks are rejected, and directory spelling aliases are rejected. Photo publication uses hard-link creation, which fails on an occupied destination instead of replacing it. Temporary upload and receipt state are separate. Receipt lookups verify actual file bytes rather than trusting stale metadata.
+
+Deno's path APIs do not give this implementation complete handle-relative/openat(O_NOFOLLOW) protection against concurrent malicious renaming of already-checked directories. The configured root and its ancestors, partial directory and state must be controlled by the receiver user and not writable by hostile local processes. Do not select a shared directory whose ancestors untrusted users can mutate. This residual race limitation is explicit; Windows junction/reparse-point support is unimplemented and Windows is unsupported pending platform-specific protections/tests. Static symlink escape rejection is covered by automated tests.
+
+Receiver startup auto-detects a private LAN address from local interfaces and routing data, excludes known VPN/container/tunnel interfaces, and never probes an internet endpoint. No usable LAN yields an actionable error instead of a misleading loopback-only server. A private-address override remains available.
+
+Photo root defaults to ~/Captures, while root/port/bind preferences are durably recorded in receiver-config.json before requests become eligible. Busy default ports fall forward; explicit ports do not. First-use QR generation is automatic, but existing paired devices do not trigger new pairing sessions on every launch. Legacy receipts without saved root configuration require that original root once rather than guessing its location.
+
+Receiver state defaults to the persistent XDG state directory (~/.local/state/folder-camera); --state is an optional override. The default is never placed in the photo tree, and the normal independent-root check still applies. Existing custom state must be selected with its override to retain that identity.
+
+There is no local web management UI, so no web management token or CSRF surface. Pairing is printed only as a temporary session; permanent tokens never appear in logs. Revocation is an offline CLI operation requiring the listener to stop. An OS advisory lock prevents independent state writers. The lock inode remains in state and is automatically unlocked on process death; do not delete it while a receiver runs.
+
+Server limits: default 64-MiB photos, two simultaneous PUTs, 32 simultaneous handlers, bounded JSON/header/prefix buffers, 30-second upload idle and 240-second total timeouts, ten-second pairing request timeout, and sixteen pairing attempts/minute. Restart resets the in-memory rate bucket; only the local receiver user can perform that reset. No HTTP, redirect following, public bind, router exposure, remote management page or cloud endpoint.
+
+## Android local-save boundary
+
+The destination is a SAF content URI. CameraX writes an app-private staging file; the app assigns the ID and stable filename and persists frozen destination metadata first. It validates the staging JPEG, calculates size/hash, records creation intent, creates exact named directories/documents, journals the document URI, copies/closes/verifies it, and transactionally marks SAVED plus creates its receiver-bound delivery task. Staging is released only afterward. Retrying a journaled completed copy verifies/adopts it rather than duplicating it; an owned incomplete document can be truncated and rewritten from retained staging.
+
+A provider can create a document before returning its URI, or a crash can occur before URI journaling. Recovery adopts an exact-name orphan only when creation intent is recorded and its complete bytes/hash match the frozen photo. An ambiguous incomplete orphan is an explicit local conflict: it is never overwritten blindly. The original staging remains; the user can export/move the conflicting provider document through its file manager and retry. Providers lacking reliable readback cannot earn SAVED; retries retain staging. SAF fsync/rename/atomic-publish guarantees are not assumed. Provider-specific crash/revocation/out-of-space behavior still needs real-device testing.
+
+Changing base directory does not move old captures or release old grants. Rotation/background continuity is an in-memory ViewModel session; process death intentionally requires destination confirmation again. App uninstall loses recoverable private staging and metadata, but not already saved public-tree originals.
+
+## Optional delivery boundary
+
+Sync is off by default. Only sync-enabled shutter actions bind an active receiver; selected earlier folders explicitly create delivery tasks. Delivery metadata is separate from capture metadata, and workers select only locally SAVED originals. Foreground and WorkManager operations claim the same Room tasks transactionally, with random claim tokens and ten-minute leases. Worker or process death may delay a retry until lease expiry; receiver idempotency prevents duplicate publication. Manual Retry resets resolved errors; reconnection resets transient pending backoff. Permanent failures wait for explicit retry.
+
+Disabling sync stops new scheduling, not a request that has already started. Such a request may commit to the original receiver. Replacement requires an explicit discard of old tasks and pauses sync; it never retargets pending tasks automatically. Originals survive discard. Background scheduling is Android-controlled. Workers deliberately have no validated-internet constraint: offline attempts back off. Transport selects an available Wi-Fi/Ethernet network for scoped sockets and DNS, permitting LAN use while mobile data is the default internet route. Neither selection nor retry requires NET_CAPABILITY_VALIDATED.
+
+Self-signed trust is scoped to one endpoint's fingerprint, not a global trust-all manager. TLS date/fingerprint checks precede credential use. Address edits additionally authenticate the receiver ID. Android AES-GCM credentials use Android Keystore; backup and device transfer exclude all app data. Keystore loss/corruption causes pairing to be unavailable and requires a fresh pair; originals are unaffected.

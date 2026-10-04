@@ -1,0 +1,8 @@
+.work/
+.gradle/
+.gradle-home/
+**/build/
+local.properties
+*.jks
+*.keystore
+receiver/.state/
