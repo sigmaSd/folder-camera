@@ -93,8 +93,11 @@ import org.foldercamera.data.Capture
     val childCounts = remember(known) { known.groupingBy { it.substringBeforeLast('/', "") }.eachCount() }
     val counts = remember(saved) { saved.groupingBy { it.relativePath }.eachCount() }
     LaunchedEffect(model.root, saved.size) { model.refreshFolders() }
-    Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val scrollScope = rememberCoroutineScope()
+    LazyColumn(Modifier.fillMaxSize().imePadding(), state = listState, contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      item(key = "controls") {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(stringResource(R.string.choose_folder_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
             Text(stringResource(R.string.choose_folder_subtitle), color = Muted, style = MaterialTheme.typography.bodyMedium)
             Surface(onClick = selectRoot, shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
@@ -127,7 +130,7 @@ import org.foldercamera.data.Capture
                 TextButton(onClick = { parent = parent.substringBeforeLast('/', "") }) { GlyphIcon(Glyph.BACK, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text(parent.substringAfterLast('/'), maxLines = 1, overflow = TextOverflow.Ellipsis) }
             }
         }
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      }
             if (visible.isEmpty()) item {
                 Column(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     GlyphIcon(Glyph.FOLDER, Modifier.size(32.dp), tint = Muted)
@@ -136,7 +139,7 @@ import org.foldercamera.data.Capture
             }
             items(visible, key = { it }) { path ->
                 val childCount = childCounts[path] ?: 0
-                Surface(onClick = { model.path = path; model.error = null; focus.clearFocus() }, color = if (model.path == path) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, if (model.path == path) Accent.copy(alpha = .4f) else Line)) {
+                Surface(onClick = { model.path = path; model.error = null; focus.clearFocus(); scrollScope.launch { listState.animateScrollToItem(0) } }, color = if (model.path == path) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, if (model.path == path) Accent.copy(alpha = .4f) else Line)) {
                     Row(Modifier.fillMaxWidth().padding(start = 14.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         GlyphIcon(Glyph.FOLDER, tint = Accent)
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -149,7 +152,6 @@ import org.foldercamera.data.Capture
                     }
                 }
             }
-        }
     }
 }
 fun treeLabel(tree: String): String = runCatching { android.provider.DocumentsContract.getTreeDocumentId(Uri.parse(tree)).substringAfterLast('/').substringAfter(':') }.getOrDefault(tree)

@@ -23,21 +23,27 @@ class GateUiTest {
         }
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("Projects/Job A/Before")
-        androidx.test.espresso.Espresso.closeSoftKeyboard()
-        rule.onNodeWithText("Start camera").performClick()
+        dismissKeyboard()
+        rule.onNodeWithText("Start camera").performScrollTo().performClick()
         rule.onNodeWithText("Projects/Job A/Before").assertExists()
         rule.onNodeWithContentDescription("Change folder").performClick()
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("New/صور")
-        rule.onNodeWithText("Cancel — keep current destination").performClick()
+        dismissKeyboard()
+        rule.onNodeWithText("Cancel — keep current destination").performScrollTo().performClick()
         rule.onNodeWithText("Projects/Job A/Before").assertExists()
         rule.onNodeWithContentDescription("Change folder").performClick()
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("New/صور")
-        androidx.test.espresso.Espresso.closeSoftKeyboard()
-        rule.onNodeWithText("Start camera").performClick()
+        dismissKeyboard()
+        rule.onNodeWithText("Start camera").performScrollTo().performClick()
         rule.onNodeWithText("New/صور").assertExists()
         rule.activityRule.scenario.recreate()
         rule.onNodeWithText("New/صور").assertExists()
+    }
+    private fun dismissKeyboard() = rule.runOnUiThread {
+        val view = rule.activity.window.decorView
+        rule.activity.getSystemService(android.view.inputmethod.InputMethodManager::class.java).hideSoftInputFromWindow(view.windowToken, 0)
+        view.clearFocus()
     }
 }
