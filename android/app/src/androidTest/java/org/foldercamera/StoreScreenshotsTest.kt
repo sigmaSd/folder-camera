@@ -55,5 +55,9 @@ class StoreScreenshotsTest {
         val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         File(folder, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
+        val exported = "/sdcard/Download/folder-camera-store-screenshots"
+        // UTP uninstalls the test app afterward; preserve emulator-only fixture screenshots in public test storage.
+        val command = "mkdir -p $exported && cp ${File(folder, name).absolutePath} $exported/$name"
+        InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command).use { descriptor -> java.io.FileInputStream(descriptor.fileDescriptor).use { it.readBytes() } }
     }
 }

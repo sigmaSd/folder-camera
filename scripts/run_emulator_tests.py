@@ -29,7 +29,7 @@ with avd.open('a') as out:
     out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\n')
 subprocess.run([str(adb), 'start-server'], check=True)
 log = (work/'emulator.log').open('w')
-process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
+process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
 def shell(*arguments):
     return subprocess.run([str(adb), '-s', 'emulator-5554', 'shell', *arguments], capture_output=True, text=True)
 try:
@@ -55,7 +55,7 @@ try:
     result = subprocess.run([str(root/'android/gradlew'), '-p', str(root/'android'), ':app:connectedDebugAndroidTest', '--no-daemon'])
     screenshot_dir = root/'.work/screenshots'
     screenshot_dir.mkdir(parents=True, exist_ok=True)
-    subprocess.run([str(adb), 'pull', '/sdcard/Android/data/io.github.sigmasd.foldercamera.debug/files/store-screenshots', str(screenshot_dir)], check=False)
+    subprocess.run([str(adb), 'pull', '/sdcard/Download/folder-camera-store-screenshots', str(screenshot_dir)], check=False)
     if result.returncode:
         raise RuntimeError('Native instrumentation tests failed; see uploaded reports')
 finally:

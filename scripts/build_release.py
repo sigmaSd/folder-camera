@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--credentials', type=Path, default=Path.home()/'.local/share/folder-camera/signing/credentials.json')
 parser.add_argument('--output', type=Path)
 parser.add_argument('--sdk', type=Path)
+parser.add_argument('--unsigned-apk', type=Path, help='Use an independently validated canonical unsigned APK for F-Droid parity')
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 credentials = json.loads(args.credentials.read_text())
@@ -27,8 +28,9 @@ for role, task, artifact in [('app', ':app:assembleRelease', 'apk/release/app-re
         'FOLDER_CAMERA_KEY_ALIAS': key['alias'],
         'FOLDER_CAMERA_KEY_PASSWORD': key['password']}
     build_environment = environment if role == 'upload' else {k:v for k,v in environment.items() if not k.startswith('FOLDER_CAMERA_')}
-    subprocess.run([str(root/'android/gradlew'), '-p', str(root/'android'), task, '--no-daemon'], env=build_environment, check=True)
-    source = root/'android/app/build/outputs'/artifact
+    if role != 'app' or args.unsigned_apk is None:
+        subprocess.run([str(root/'android/gradlew'), '-p', str(root/'android'), task, '--no-daemon'], env=build_environment, check=True)
+    source = args.unsigned_apk if role == 'app' and args.unsigned_apk is not None else root/'android/app/build/outputs'/artifact
     target = out/f'folder-camera-{version}{source.suffix}'
     if role == 'app':
         subprocess.run([str(build_tools/'apksigner'), 'sign', '--ks', key['keystore'], '--ks-key-alias', key['alias'], '--ks-pass', 'env:FOLDER_CAMERA_STORE_PASSWORD', '--key-pass', 'env:FOLDER_CAMERA_KEY_PASSWORD', '--v1-signing-enabled', 'false', '--v2-signing-enabled', 'true', '--v3-signing-enabled', 'true', '--v4-signing-enabled', 'false', '--out', str(target), str(source)], env=environment, check=True)
