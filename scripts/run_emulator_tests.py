@@ -26,7 +26,7 @@ avd_path = avd_home/'folder-camera-tests.avd'
 subprocess.run([str(avdmanager), 'create', 'avd', '--force', '--name', 'folder-camera-tests', '--package', image, '--device', 'pixel_7', '--path', str(avd_path)], input='no\n', text=True, check=True, env=environment)
 avd = avd_path/'config.ini'
 with avd.open('a') as out:
-    out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\n')
+    out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\ndisk.dataPartition.size=8G\n')
 subprocess.run([str(adb), 'start-server'], check=True)
 log = (work/'emulator.log').open('w')
 process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
@@ -59,7 +59,7 @@ try:
     if result.returncode:
         raise RuntimeError('Native instrumentation tests failed; see uploaded reports')
 finally:
-    for name, arguments in [('logcat.log',['logcat','-d']),('services.log',['shell','service','list']),('properties.log',['shell','getprop'])]:
+    for name, arguments in [('logcat.log',['logcat','-d']),('services.log',['shell','service','list']),('properties.log',['shell','getprop']),('storage.log',['shell','df','-h'])]:
         with (work/name).open('w') as out:
             subprocess.run([str(adb), '-s', 'emulator-5554', *arguments], stdout=out, stderr=subprocess.STDOUT)
     subprocess.run([str(adb), '-s', 'emulator-5554', 'emu', 'kill'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

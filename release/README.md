@@ -10,7 +10,9 @@ Private app/upload PKCS12 files and credentials are outside this repository at `
 
 `scripts/create_signing_keys.py` creates keys once and refuses accidental replacement. `scripts/build_release.py` signs APK with the app key and AAB with the separate upload key. Use the app key for Play App Signing import (via Google's PEPK tool and Console-provided encryption key); do not let Google generate a different app-signing identity if cross-store upgrades are required. No private key has been uploaded to Google.
 
-`scripts/verify_release.py APK --sdk SDK_PATH` checks signature, production manifest, legal assets, 16-KB ZIP and 64-bit native ELF alignment. F-Droid must reproduce the unsigned upstream APK before distributing the developer signature; compatible store upgrades remain unclaimed until tested.
+`scripts/verify_release.py APK --sdk SDK_PATH` checks signature, production manifest, legal assets, 16-KB ZIP and 64-bit native ELF alignment. Official F-Droid build/scan/reference verification has passed for v1.0.0. `scripts/verify_reproducibility.py` separately confirms that copying the developer signature onto the independently built unsigned APK yields byte-identical signed bytes. Compatible upgrades from a Google-served installation remain unclaimed until tested.
+
+Use `scripts/build_release.py --unsigned-apk CANONICAL_APK` to sign the verified F-Droid/JDK-21 build. APK signing uses SDK apksigner with alignment preserved; re-signing through Gradle changes the ZIP and breaks reproduction. The signed candidate is public at https://github.com/sigmasd/folder-camera/releases/tag/v1.0.0; checksums are in artifact-checksums.json.
 
 ## Publication gates
 
