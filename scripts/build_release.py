@@ -33,7 +33,7 @@ for role, task, artifact in [('app', ':app:assembleRelease', 'apk/release/app-re
     source = args.unsigned_apk if role == 'app' and args.unsigned_apk is not None else root/'android/app/build/outputs'/artifact
     target = out/f'folder-camera-{version}{source.suffix}'
     if role == 'app':
-        subprocess.run([str(build_tools/'apksigner'), 'sign', '--ks', key['keystore'], '--ks-key-alias', key['alias'], '--ks-pass', 'env:FOLDER_CAMERA_STORE_PASSWORD', '--key-pass', 'env:FOLDER_CAMERA_KEY_PASSWORD', '--v1-signing-enabled', 'false', '--v2-signing-enabled', 'true', '--v3-signing-enabled', 'true', '--v4-signing-enabled', 'false', '--out', str(target), str(source)], env=environment, check=True)
+        subprocess.run([str(build_tools/'apksigner'), 'sign', '--ks', key['keystore'], '--ks-key-alias', key['alias'], '--ks-pass', 'env:FOLDER_CAMERA_STORE_PASSWORD', '--key-pass', 'env:FOLDER_CAMERA_KEY_PASSWORD', '--alignment-preserved', 'true', '--v1-signing-enabled', 'false', '--v2-signing-enabled', 'true', '--v3-signing-enabled', 'true', '--v4-signing-enabled', 'false', '--out', str(target), str(source)], env=environment, check=True)
     else:
         shutil.copyfile(source, target)
     print(f'Built {target}')
