@@ -1,0 +1,33 @@
+Categories:
+  - Multimedia
+License: GPL-3.0-or-later
+AuthorName: sigmasd
+AuthorWebSite: https://github.com/sigmasd
+WebSite: https://sigmasd.github.io/folder-camera
+SourceCode: https://github.com/sigmasd/folder-camera
+IssueTracker: https://github.com/sigmasd/folder-camera/issues
+Changelog: https://github.com/sigmasd/folder-camera/blob/HEAD/CHANGELOG.md
+
+AutoName: Folder Camera
+
+RepoType: git
+Repo: https://github.com/sigmasd/folder-camera.git
+
+Binaries: https://github.com/sigmasd/folder-camera/releases/download/v%v/folder-camera-%v.apk
+AllowedAPKSigningKeys: 2e119cce85d89feb92aa7577835ed75d5fc3b48755fb12097a33535aec9cb17e
+
+Builds:
+  - versionName: '1.0.0'
+    versionCode: 4
+    commit: v1.0.0
+    subdir: android
+    gradle:
+      - yes
+    scandelete:
+      - app/src/androidTest/assets
+      - app/src/test/resources
+
+AutoUpdateMode: Version v%v
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: '1.0.0'
+CurrentVersionCode: 4

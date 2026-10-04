@@ -7,17 +7,33 @@ android {
     namespace = "org.foldercamera"
     compileSdk = 37
     defaultConfig {
-        applicationId = "org.foldercamera"
+        applicationId = "io.github.sigmasd.foldercamera"
         minSdk = 26
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
     testOptions { unitTests.isIncludeAndroidResources = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
-    buildTypes { release { isMinifyEnabled = false } }
+    signingConfigs {
+        val path = providers.environmentVariable("FOLDER_CAMERA_KEYSTORE").orNull
+        if (path != null) create("production") {
+            storeFile = file(path)
+            storePassword = providers.environmentVariable("FOLDER_CAMERA_STORE_PASSWORD").get()
+            keyAlias = providers.environmentVariable("FOLDER_CAMERA_KEY_ALIAS").get()
+            keyPassword = providers.environmentVariable("FOLDER_CAMERA_KEY_PASSWORD").get()
+            enableV1Signing = true; enableV2Signing = true; enableV3Signing = true
+        }
+    }
+    buildTypes {
+        debug { applicationIdSuffix = ".debug"; versionNameSuffix = "-dev" }
+        release {
+            isMinifyEnabled = false
+            signingConfigs.findByName("production")?.let { signingConfig = it }
+        }
+    }
 }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {

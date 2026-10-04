@@ -1,10 +1,10 @@
 # Folder Camera
 
-Native Kotlin Android folder camera with an optional TypeScript/Deno LAN receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. This is an initial implementation, not a signed release or store submission.
+Native Kotlin Android folder camera with an optional TypeScript/Deno LAN receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The 1.0.0 release candidate is being prepared for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
 
 ## Android build
 
-Requirements: JDK 17 or newer supported by Gradle 9.4 (JDK 25 was used here), Android command-line SDK tools, SDK platform **37.0**, Build Tools **36.0.0**. No Android Studio is required.
+Requirements: JDK 21 for release/F-Droid parity (prototype checks also ran on JDK 25), Android command-line SDK tools, SDK platform **37.0**, Build Tools **36.0.0**. No Android Studio is required.
 
 ```sh
 sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0' 'platform-tools'
@@ -16,7 +16,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 Alternatively, put `sdk.dir=/absolute/sdk/path` in untracked `android/local.properties`. The Gradle wrapper and its distribution checksum are pinned. `android/app/schemas/` contains the Room schema. First builds and Robolectric SDK downloads need internet; application runtime does not.
 
-Application ID: `org.foldercamera`; minSdk 26 (Android 8), target/compile SDK 37 (Android 17). API 26 is a conservative product support floor, above the libraries’ API-23 minimum; Keystore/SAF/network APIs were checked with minSdk lint. API 23–25 compatibility is not claimed. Kotlin is built into AGP 9.1.1; Compose compiler 2.2.10, KSP 2.3.12, Compose BOM 2026.09.00, CameraX 1.6.2, Room 2.8.5, WorkManager 2.11.2. Other supported stable dependencies are pinned in `android/app/build.gradle.kts`.
+Production application ID: `io.github.sigmasd.foldercamera` (debug adds `.debug`); minSdk 26 (Android 8), target/compile SDK 37 (Android 17). API 26 is a conservative product support floor, above the libraries’ API-23 minimum; Keystore/SAF/network APIs were checked with minSdk lint. API 23–25 compatibility is not claimed. Kotlin is built into AGP 9.1.1; Compose compiler 2.2.10, KSP 2.3.12, Compose BOM 2026.09.00, CameraX 1.6.2, Room 2.8.5, WorkManager 2.11.2. Other supported stable dependencies are pinned in `android/app/build.gradle.kts`.
 
 ## Standalone use
 
@@ -110,3 +110,10 @@ Restart the normal listener afterward. An OS advisory lock prevents concurrent s
 ## Verification and remaining device checks
 
 See [testing.md](docs/testing.md) for actual results, blockers, and the acceptance checklist; [protocol.md](docs/protocol.md) for the wire contract; [dependencies.md](docs/dependencies.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the dependency audit. F-Droid admission and bit-for-bit reproducibility are not claimed. No release signing keys, telemetry, proprietary QR service, Firebase, Play Services, advertising, or cloud endpoint is used.
+
+## Public source and release preparation
+
+Source: https://github.com/sigmasd/folder-camera
+Product/privacy site: https://sigmasd.github.io/folder-camera/
+
+Unsigned CI artifacts are for validation. Signed APK/AAB builds use private keys outside Git; see [release/README.md](release/README.md). The current production identity is distinct from the original prototype `org.foldercamera`; keep the prototype installed while validating the new app and recover/export any private staging before uninstalling it. Saved public-tree photos remain accessible, but private metadata/pairing are not silently transferred between app identities.

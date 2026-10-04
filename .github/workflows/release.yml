@@ -1,0 +1,26 @@
+name: Prepare tagged release artifacts
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unsigned-artifacts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - working-directory: android
+        run: ./gradlew :app:assembleRelease :app:bundleRelease :app:testDebugUnitTest :app:lintDebug --no-daemon
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-candidates-unsigned
+          path: |
+            android/app/build/outputs/apk/release/*unsigned.apk
+            android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30

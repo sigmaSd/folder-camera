@@ -11,6 +11,7 @@ import java.io.File
 /** Debug-only provider for deterministic SAF failure/recovery tests. Never included in release. */
 class TestDocumentsProvider : DocumentsProvider() {
     companion object {
+        const val AUTHORITY = BuildConfig.APPLICATION_ID + ".testdocs"
         @Volatile var denyAccess = false
         @Volatile var denyWrites = false
         @Volatile var denyReads = false

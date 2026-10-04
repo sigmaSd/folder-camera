@@ -16,7 +16,7 @@ import java.io.File
 class RecoveryTest {
     private lateinit var context: Context
     private lateinit var db: CameraDatabase
-    private val tree = DocumentsContract.buildTreeDocumentUri("org.foldercamera.testdocs", "root").toString()
+    private val tree = DocumentsContract.buildTreeDocumentUri(TestDocumentsProvider.AUTHORITY, "root").toString()
     @Before fun setup() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
         TestDocumentsProvider.denyAccess = false; TestDocumentsProvider.denyWrites = false; TestDocumentsProvider.denyReads = false

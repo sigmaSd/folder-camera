@@ -17,19 +17,19 @@ import java.io.File
 class HostRecoveryTest {
     private lateinit var context: Context
     private lateinit var db: CameraDatabase
-    private val tree = DocumentsContract.buildTreeDocumentUri("org.foldercamera.testdocs", "root").toString()
+    private val tree = DocumentsContract.buildTreeDocumentUri(TestDocumentsProvider.AUTHORITY, "root").toString()
     @Before fun setup() {
         val base = org.robolectric.RuntimeEnvironment.getApplication() as android.app.Application
         // Robolectric does not implement persisted tree-prefix URI grants; emulate only this test authority.
         context = object : android.content.ContextWrapper(base) {
             override fun checkCallingOrSelfUriPermission(uri: android.net.Uri, modeFlags: Int): Int =
-                if (uri.authority == "org.foldercamera.testdocs" && !TestDocumentsProvider.denyAccess) android.content.pm.PackageManager.PERMISSION_GRANTED else android.content.pm.PackageManager.PERMISSION_DENIED
+                if (uri.authority == TestDocumentsProvider.AUTHORITY && !TestDocumentsProvider.denyAccess) android.content.pm.PackageManager.PERMISSION_GRANTED else android.content.pm.PackageManager.PERMISSION_DENIED
         }
         val provider = TestDocumentsProvider()
-        provider.attachInfo(context, android.content.pm.ProviderInfo().apply { authority = "org.foldercamera.testdocs"; exported = true; grantUriPermissions = true; readPermission = "android.permission.MANAGE_DOCUMENTS"; writePermission = "android.permission.MANAGE_DOCUMENTS" })
+        provider.attachInfo(context, android.content.pm.ProviderInfo().apply { authority = TestDocumentsProvider.AUTHORITY; exported = true; grantUriPermissions = true; readPermission = "android.permission.MANAGE_DOCUMENTS"; writePermission = "android.permission.MANAGE_DOCUMENTS" })
         org.robolectric.Shadows.shadowOf(base).grantPermissions("android.permission.MANAGE_DOCUMENTS")
         context.grantUriPermission(context.packageName, android.net.Uri.parse(tree), android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        org.robolectric.shadows.ShadowContentResolver.registerProviderInternal("org.foldercamera.testdocs", provider)
+        org.robolectric.shadows.ShadowContentResolver.registerProviderInternal(TestDocumentsProvider.AUTHORITY, provider)
         TestDocumentsProvider.denyAccess = false; TestDocumentsProvider.denyWrites = false; TestDocumentsProvider.denyReads = false
         File(context.filesDir, "test-documents").deleteRecursively()
         val probe = androidx.documentfile.provider.DocumentFile.fromTreeUri(context, android.net.Uri.parse(tree))!!

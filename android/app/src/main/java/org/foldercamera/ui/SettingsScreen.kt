@@ -119,6 +119,7 @@ import org.json.JSONObject
         Button(enabled = !operation, onClick = { pair(JSONObject().put("version", 1).put("receiverId", receiverId).put("endpoint", address).put("fingerprint", fingerprint).put("secret", secret).put("expiresAt", System.currentTimeMillis() + 300_000).toString()) }) { Text(stringResource(R.string.manual_pair)) }
         }
         }
+        AboutSection()
     }
     if (showEnable) AlertDialog(onDismissRequest = { showEnable = false }, title = { Text(stringResource(R.string.enable_sync)) }, text = {
         Column(Modifier.verticalScroll(rememberScrollState())) {

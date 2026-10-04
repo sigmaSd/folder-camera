@@ -1,0 +1,1 @@
+Initial public release candidate: offline folder capture, searchable Paths, zoom and continuous light, verified local-save recovery, photo previews/share/export, and optional secure LAN uploads. Includes automatic receiver setup, privacy information and open-source license access.

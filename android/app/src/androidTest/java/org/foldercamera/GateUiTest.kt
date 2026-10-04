@@ -19,7 +19,7 @@ class GateUiTest {
     @Test fun confirmingAndCancelingDestinationChangesPreservesSessionAcrossRotation() {
         rule.activityRule.scenario.onActivity { activity ->
             androidx.lifecycle.ViewModelProvider(activity)[org.foldercamera.ui.CameraModel::class.java].selectRoot(
-                android.provider.DocumentsContract.buildTreeDocumentUri("org.foldercamera.testdocs", "root").toString())
+                android.provider.DocumentsContract.buildTreeDocumentUri(TestDocumentsProvider.AUTHORITY, "root").toString())
         }
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("Projects/Job A/Before")

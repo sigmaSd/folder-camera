@@ -1,0 +1,32 @@
+Folder Camera Privacy Policy
+Publisher: sigmasd
+Last updated: 4 October 2026
+
+Folder Camera takes JPEG photos and saves them in the folder you choose. The app works without a PC, account or internet connection. It has no advertising, analytics, tracking SDK or developer-operated photo server.
+
+Local photos and metadata
+Photos are first captured into temporary private staging. The app verifies the permanent copy in your chosen folder before marking it saved. Private metadata records the photo ID, filename, capture time, relative path, storage URI, size, SHA-256 and save/upload status. Failed saves retain recoverable staging until you retry or export it. JPEGs may contain ordinary camera metadata. The app does not request location access.
+
+Optional PC transfer
+PC sync is off by default. If you pair and enable it, eligible JPEGs and their filename/path/ID/hash/size are sent directly to your selected receiver over certificate-verified HTTPS. Pairing exchanges a temporary secret for a device credential. The receiver stores photos beneath your selected PC root and keeps its identity, certificate, credential hashes and receipts in separate local state. We do not receive these photos or operate an intermediary service. Already committed PC copies remain after you pause sync. A changed receiver requires an explicit queue decision.
+
+Permissions
+Camera access enables photo capture and offline QR scanning. System folder access is limited to the trees you select. Network and local-network access enable optional LAN transfers. No broad all-files, location, contacts or microphone access is requested. A provider-backed folder may be handled by its provider, including the provider's own cloud service and privacy terms.
+
+Sharing and export
+Sharing/export happen through Android apps or destinations you select. Those apps/providers handle the exported data under their own terms.
+
+Retention and deletion
+Saved files belong to your selected folders and can be deleted with your file manager. Local and PC copies are independent: deleting one does not delete the other. Clearing app data or uninstalling removes private metadata, staging and credentials; permanent selected-folder photos survive. Pending private staging can be lost on uninstall, so recover/export it first. Receiver files/state can be removed independently on your PC; stop the receiver first. Android cloud backup and device transfer of private app data are disabled.
+
+Security
+Android pairing credentials are encrypted with an Android Keystore key. The receiver stores token hashes, restricts private state permissions, validates paths, prevents overwriting and verifies receipt bytes. User-controlled roots must be protected from hostile local changes. TLS protects network transfers; storage encryption depends on your device/provider configuration.
+
+Contact and source
+Source and issue tracker: https://github.com/sigmasd/folder-camera
+Privacy enquiries: https://github.com/sigmasd/folder-camera/issues
+Avoid including photos, credentials or other sensitive information in public issues. The final company support mailbox will be added before the Google Play listing is submitted.
+Online policy: https://sigmasd.github.io/folder-camera/privacy.html
+
+Website
+The product website is hosted on GitHub Pages and uses no analytics or advertising scripts. GitHub may process normal website-request metadata under its own hosting/privacy policy. The app only opens that website when you choose to open a link.
