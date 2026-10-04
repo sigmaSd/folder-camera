@@ -57,7 +57,9 @@ class StoreScreenshotsTest {
         bitmap.recycle()
         val exported = "/sdcard/Download/folder-camera-store-screenshots"
         // UTP uninstalls the test app afterward; preserve emulator-only fixture screenshots in public test storage.
-        val command = "mkdir -p $exported && cp ${File(folder, name).absolutePath} $exported/$name"
-        InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command).use { descriptor -> java.io.FileInputStream(descriptor.fileDescriptor).use { it.readBytes() } }
+        fun shell(command: String): String = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command).use { descriptor -> java.io.FileInputStream(descriptor.fileDescriptor).use { String(it.readBytes()) } }
+        shell("mkdir -p $exported")
+        shell("cp ${File(folder, name).absolutePath} $exported/$name")
+        org.junit.Assert.assertTrue("Screenshot export failed", shell("ls $exported/$name").contains(name))
     }
 }
