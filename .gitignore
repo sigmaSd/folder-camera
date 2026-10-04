@@ -10,3 +10,5 @@ receiver/.state/
 *.pkcs12
 signing.properties
 *private-key.pem
+__pycache__/
+*.py[cod]
