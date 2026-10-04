@@ -1,6 +1,7 @@
 package org.foldercamera
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import android.os.Build
 import android.provider.DocumentsContract
 import androidx.compose.ui.test.*
@@ -25,6 +26,7 @@ class StoreScreenshotsTest {
         val tree = DocumentsContract.buildTreeDocumentUri(TestDocumentsProvider.AUTHORITY, "root").toString()
         context.grantUriPermission(context.packageName, android.net.Uri.parse(tree), android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION or android.content.Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
         runBlocking {
+            TestDocumentsProvider.rootDisplayName = "FolderCamera"
             app.db.clearAllTables()
             File(context.filesDir, "test-documents").deleteRecursively()
             TestDocumentsProvider.denyAccess = false; TestDocumentsProvider.denyWrites = false; TestDocumentsProvider.denyReads = false
@@ -40,6 +42,8 @@ class StoreScreenshotsTest {
             model.selectRoot(tree); model.path = "Projects/Studio/Before"
         }
         rule.waitUntil(10_000) { rule.onAllNodesWithText("Projects").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithText("Projects/Studio/Before").assertExists()
+        rule.onNodeWithText("Projects").performScrollTo()
         screenshot("1-paths.png")
         rule.onNodeWithText("Start camera").performClick()
         rule.waitUntil(15_000) { rule.onAllNodesWithContentDescription("Take photo").fetchSemanticsNodes().any { !it.config.contains(androidx.compose.ui.semantics.SemanticsProperties.Disabled) } }
@@ -52,7 +56,7 @@ class StoreScreenshotsTest {
         rule.waitForIdle()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val folder = File(context.getExternalFilesDir(null), "store-screenshots").apply { mkdirs() }
-        val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        val bitmap = rule.onRoot().captureToImage().asAndroidBitmap()
         File(folder, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
         val exported = "/sdcard/Download/folder-camera-store-screenshots"

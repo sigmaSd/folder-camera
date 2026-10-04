@@ -12,6 +12,7 @@ import java.io.File
 class TestDocumentsProvider : DocumentsProvider() {
     companion object {
         const val AUTHORITY = BuildConfig.APPLICATION_ID + ".testdocs"
+        @Volatile var rootDisplayName = "Test Captures"
         @Volatile var denyAccess = false
         @Volatile var denyWrites = false
         @Volatile var denyReads = false
@@ -25,7 +26,7 @@ class TestDocumentsProvider : DocumentsProvider() {
         return f
     }
     private fun row(cursor: MatrixCursor, f: File, id: String) {
-        val values = mapOf<String, Any>("document_id" to id, DocumentsContract.Document.COLUMN_DISPLAY_NAME to if (id == "root") "Test Captures" else f.name, "mime_type" to if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "image/jpeg", "flags" to (if (f.isDirectory) DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE else DocumentsContract.Document.FLAG_SUPPORTS_WRITE), DocumentsContract.Document.COLUMN_SIZE to f.length(), "last_modified" to f.lastModified())
+        val values = mapOf<String, Any>("document_id" to id, DocumentsContract.Document.COLUMN_DISPLAY_NAME to if (id == "root") rootDisplayName else f.name, "mime_type" to if (f.isDirectory) DocumentsContract.Document.MIME_TYPE_DIR else "image/jpeg", "flags" to (if (f.isDirectory) DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE else DocumentsContract.Document.FLAG_SUPPORTS_WRITE), DocumentsContract.Document.COLUMN_SIZE to f.length(), "last_modified" to f.lastModified())
         cursor.addRow(cursor.columnNames.map { values[it] }.toTypedArray())
     }
     override fun onCreate() = true
