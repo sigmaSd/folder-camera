@@ -50,3 +50,9 @@ dependencies {
 }
 
 dependencyLocking { lockAllConfigurations() }
+
+tasks.withType<Test>().configureEach {
+    val testTemporary = rootProject.layout.buildDirectory.dir("test-tmp").get().asFile
+    systemProperty("java.io.tmpdir", testTemporary.absolutePath)
+    doFirst { testTemporary.mkdirs() }
+}

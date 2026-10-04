@@ -6,3 +6,7 @@ local.properties
 *.jks
 *.keystore
 receiver/.state/
+*.p12
+*.pkcs12
+signing.properties
+*private-key.pem

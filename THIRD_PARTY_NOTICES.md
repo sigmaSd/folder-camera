@@ -1,6 +1,6 @@
 # Third-party notices
 
-Folder Camera app and receiver source: Copyright 2026 Folder Camera contributors. Licensed under **GPL-3.0-or-later**; the full GPL v3 text is in `LICENSE`. This grant permits version 3 or any later version. Development JPEG fixtures and test-only TLS material are part of this project under the same license; the TLS key is public dummy test material and must never be used in production.
+Folder Camera app and receiver source: Copyright 2026 Folder Camera contributors. Licensed under **GPL-3.0-or-later**; the full GPL v3 text is in `LICENSE`. This grant permits version 3 or any later version. Development JPEG fixtures are part of this project under the same license. TLS tests generate temporary credentials at runtime; private keys are not stored in source.
 
 Android runtime dependencies include AndroidX/Jetpack (The Android Open Source Project), Kotlin/coroutines (JetBrains and contributors), CameraX, Room, Compose, WorkManager, DocumentFile, OkHttp/Okio (Square and contributors), ZXing (ZXing authors), and Guava/listenablefuture (Google and contributors). These families are Apache-2.0, compatible with GPL v3. The canonical Apache license is in `third_party/licenses/Apache-2.0.txt`; artifact-supplied copyright/license/notice files are preserved in `third_party/licenses/android/`. The resolved artifact/license inventory is in `docs/android-runtime-dependencies.md`.
 
