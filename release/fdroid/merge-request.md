@@ -19,6 +19,8 @@ Validation performed locally in the official F-Droid buildserver image pinned to
 - Downloaded developer APK matches the independently rebuilt APK through signature-copy verification.
 - Allowed app signing certificate SHA-256: `2e119cce85d89feb92aa7577835ed75d5fc3b48755fb12097a33535aec9cb17e`.
 - Production APK signature/manifest/16-KB ZIP and native ELF checks pass.
-- Android 16 native acceptance passes on both 4-KB and 16-KB images. Android 17 maintenance-image testing is ongoing due base-image system-storage errors, not claimed as passed yet.
+- Android 16 native acceptance passes on both 4-KB and 16-KB images. Android 17 emulator validation has not passed: expanding userdata fixes installation, but emulator SurfaceFlinger/RegionSampling aborts repeatedly in mapper.ranchu; system services restart and the instrumentation process is killed under memory pressure. Zero app tests complete.
+
+Two native fixture screenshots and the English listing assets are included as fdroiddata metadata sidecars because the v1.0.0 tag predates screenshot publication.
 
 The APK is currently labelled an upstream release candidate while store preparation is completed. The official recipe is included with automatic stable-tag update detection. No private signing material is committed.

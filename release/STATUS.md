@@ -17,13 +17,13 @@ Updated 2026-10-04 (Africa/Tunis). This is a factual checklist, not a claim that
 - Official F-Droid independently rebuilt v1.0.0 and verified it against the downloaded upstream APK with the allowed developer signing certificate.
 - Public signed upstream candidate: https://github.com/sigmasd/folder-camera/releases/tag/v1.0.0 (marked prerelease).
 - Fastlane-compatible title, descriptions, changelog, icon, feature graphic and two visually checked native UI screenshots prepared.
-- Main CI: https://github.com/sigmasd/folder-camera/actions/runs/37224921023
-- Native Android 16 results: https://github.com/sigmasd/folder-camera/actions/runs/37224921037 (both API 36 jobs pass; API 37.2 fails before test execution).
+- Main CI: https://github.com/sigmasd/folder-camera/actions/runs/37225852712
+- Native Android 16 results: https://github.com/sigmasd/folder-camera/actions/runs/37225852701 (both API 36 jobs pass; API 37.2 cannot complete instrumentation).
 
-## In progress
+## Validation blocker
 
-- Android 17 maintenance-image native validation: test APK installation reports "Requested internal only, but not enough space", with system media storage mount errors. Retrying once with an explicit 8-GB userdata partition and preserving filesystem diagnostics. No API 37 pass is claimed.
-- F-Droid merge request body and recipe prepared under release/fdroid.
+- Android 17 / API 37.2: expanding userdata to 8 GB fixed installation (6.8 GB free). The emulator then repeatedly aborts SurfaceFlinger/RegionSampling in mapper.ranchu (`Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma`), restarts system services and kills the instrumentation app under memory pressure. Zero app tests complete. Graphics compatibility and a stable API-37 emulator/device still need validation; no API 37 pass is claimed.
+- F-Droid merge request body, recipe and English screenshot sidecars are prepared under release/fdroid; local fdroiddata branch `folder-camera-submission`, commit `30f23b396`, is ready to push once authenticated.
 
 ## External requirements
 
