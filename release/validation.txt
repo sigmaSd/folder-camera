@@ -3,13 +3,17 @@ Date: 2026-10-04
 Application ID: io.github.sigmasd.foldercamera
 Source tag: v1.0.0
 Tag commit: 0f73b5f4522aea71436a0babac99fa09087fce78
+F-Droid submitted source: b169eb51a8f195c05051001c906ef4d4e90dedf5
+(This later source commit includes upstream screenshots; production app inputs
+are unchanged and independent source reproduction passed for both commits.)
 
 PASS: Android host tests (13), receiver tests (16), Android lint/build CI.
 PASS: Eight native tests on Android 16 4-KB and 16-KB system images.
 PASS: Production APK signature, manifest identity, bundled license/privacy assets.
 PASS: APK 16-KB ZIP alignment and 64-bit native ELF segment alignment.
 PASS: Google bundletool 1.18.3 AAB validation and JAR signature verification.
-PASS: F-Droid metadata lint, clean source build, source and APK scans.
+PASS: F-Droid metadata lint, canonical rewrite and official JSON schema.
+PASS: F-Droid clean source build and source/APK scans.
 PASS: F-Droid reference APK allowed signer and reproducibility comparison.
 PASS: Separate apksigcopier verification produces byte-identical signed APK.
 
@@ -26,7 +30,11 @@ System services restart and the instrumentation app is killed by lowmemorykiller
 Zero app tests complete. A stable graphics/emulator/device configuration is needed.
 See STATUS.md for the latest retry result and linked job diagnostics.
 Google-served cross-store upgrade: NOT TESTED; Play account does not exist yet.
-F-Droid merge request: NOT FILED; GitLab authentication needed.
+PASS: All nine remote F-Droid GitLab checks, including build and APK check.
+Pipeline: https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2911353093
+Report: 13 permission/R8/informational entries, explained in MR comment.
+F-Droid merge request: FILED, pending review.
+https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
 Play submission: NOT FILED; company/account/contact/pricing inputs needed.
 
 Checksums: artifact-checksums.json

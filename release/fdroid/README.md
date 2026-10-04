@@ -1,9 +1,18 @@
 # Official F-Droid submission
 
-The source recipe and merge-request body in this directory are prepared and validated. No merge request has been filed yet; GitLab authentication is required.
+Filed: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
+Pipeline: https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2911353093
+Fork branch: sigmaSd/fdroiddata, folder-camera
+Submission commit: 21579bffd0a9aac3b7657ddeb9614df811a3fd3a
+CI: all nine jobs pass, including full build and APK check.
+Report notes: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190#note_3951938192
 
-Submit to https://gitlab.com/fdroid/fdroiddata after forking it under the maintainer account. A local submission branch is already prepared in `.work/fdroid/data` (branch `folder-camera-submission`, commit `30f23b396`). Its unrelated local config.yml change is excluded from the commit. If rebuilding the submission checkout, create a branch, copy `io.github.sigmasd.foldercamera.yml` into `metadata/`, and copy `fastlane/metadata/android/en-US/` into `metadata/io.github.sigmasd.foldercamera/en-US/`. Commit only those app files. Use `merge-request.md` as the request description and record its URL in ../STATUS.md after filing.
+The MR adds only metadata/io.github.sigmasd.foldercamera.yml. All English listing text, icon, feature graphic, changelog and native fixture screenshots remain in the upstream fastlane directory, following the App inclusion template. No listing sidecars are submitted to fdroiddata.
 
-The English sidecars include two real native UI screenshots with synthetic fixture data. They are needed for the first submission because the stable-shaped v1.0.0 source tag predates screenshots. The tag has not been moved. Future tagged releases can import upstream Fastlane metadata automatically.
+The recipe pins full upstream source commit b169eb51a8f195c05051001c906ef4d4e90dedf5. This commit includes the screenshots added after the v1.0.0 tag. Production app sources and build dependencies are unchanged. A clean build from this exact commit in the official F-Droid buildserver image passes source/APK scans, allowed signing certificate checks and reproducibility comparison against the existing public v1.0.0 APK. The public tag has not been moved. Future tagged versions use automatic updates.
 
-The app was rebuilt from the public v1.0.0 tag inside the official buildserver image and passed source scanning, APK scanning, allowed signing certificate checks, and the upstream reference APK comparison. Maintainers still perform their own review/build and decide admission; local success does not imply an official listing.
+The local checkout is .work/fdroid/data. Its unrelated local config.yml change is excluded from the submission commit. The older unsubmitted folder-camera-submission branch with sidecars is superseded and must not be pushed.
+
+Maintainers still perform review/build and decide admission. A filed MR and local verification do not imply an official app listing. The owner added a personal introduction to the live MR description; preserve it in any future edits. merge-request.md records the generated submission text, and report-notes.md records the posted findings explanation.
+
+Record any subsequent review changes and the final admission/publication result in ../STATUS.md.

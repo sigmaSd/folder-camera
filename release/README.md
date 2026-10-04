@@ -19,7 +19,7 @@ Use `scripts/build_release.py --unsigned-apk CANONICAL_APK` to sign the verified
 - Public GitHub source/CI and privacy URL operational.
 - Complete emulator/device acceptance, including API 37 and 16-KB image; store screenshots generated using fixtures only.
 - Clean F-Droid build/scan/metadata and reproducible APK comparison.
-- GitLab account access for the official fdroiddata merge request.
+- Official F-Droid MR filed and all nine CI jobs passed: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190; maintainer review/publication pending.
 - Verified SARL organization Play account, owner terms/payment/merchant verification.
 - Final price, support mailbox/phone, legal publisher details and store declarations reviewed.
 - APK/AAB and candidate listings reviewed before public store release.
