@@ -14,6 +14,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
       - working-directory: android
         run: ./gradlew :app:assembleRelease :app:bundleRelease :app:testDebugUnitTest :app:lintDebug --no-daemon
