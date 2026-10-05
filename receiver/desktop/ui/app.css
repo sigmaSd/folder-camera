@@ -524,3 +524,11 @@ body.busy button:not(.quiet) {
     display: none;
   }
 }
+
+#licenses-text {
+  max-height: 55vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.6 ui-monospace,monospace;
+}

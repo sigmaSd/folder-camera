@@ -202,3 +202,9 @@ async function refresh() {
 }
 refresh();
 setInterval(refresh, 1500);
+
+$("licenses").onclick = () =>
+  action(async () => {
+    $("licenses-text").textContent = await (await fetch("licenses.txt")).text();
+    $("licenses-dialog").showModal();
+  });

@@ -77,6 +77,11 @@
         class="dialog-actions"><button id="use-folder">Use this folder</button></div>
     </dialog>
     <dialog
-      id="settings-dialog"><form method="dialog" class="dialog-heading"><h2>Receiver settings</h2><button class="quiet" aria-label="Close settings">✕</button></form><label class="setting"><span><strong>Launch at login</strong><small>Start receiving when you sign in.</small></span><input type="checkbox" id="autostart"></label><label class="setting" id="tray-setting"><span><strong>Keep receiving when closed</strong><small>Use the tray icon or reopen the app to return.</small></span><input type="checkbox" id="close-to-tray"></label><p class="fine">Originals remain on your phone. Pairing codes are single-use and expire after five minutes.</p><button id="quit" class="danger">Quit receiver</button></dialog>
+      id="settings-dialog"><form method="dialog" class="dialog-heading"><h2>Receiver settings</h2><button class="quiet" aria-label="Close settings">✕</button></form><label class="setting"><span><strong>Launch at login</strong><small>Start receiving when you sign in.</small></span><input type="checkbox" id="autostart"></label><label class="setting" id="tray-setting"><span><strong>Keep receiving when closed</strong><small>Use the tray icon or reopen the app to return.</small></span><input type="checkbox" id="close-to-tray"></label><p class="fine">Originals remain on your phone. Pairing codes are single-use and expire after five minutes.</p><button id="licenses" class="quiet">Open-source licenses</button><button id="quit" class="danger">Quit receiver</button></dialog>
+    <dialog id="licenses-dialog">
+      <form method="dialog"
+        class="dialog-heading"><h2>Open-source licenses</h2><button class="quiet" aria-label="Close licenses">✕</button></form>
+      <pre id="licenses-text"></pre>
+    </dialog>
   </body>
 </html>

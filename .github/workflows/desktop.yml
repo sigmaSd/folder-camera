@@ -22,14 +22,14 @@ jobs:
           - {os: ubuntu-24.04, platform: linux-x64, target: x86_64-unknown-linux-gnu, format: AppImage}
           - {os: ubuntu-24.04-arm, platform: linux-arm64, target: aarch64-unknown-linux-gnu, format: AppImage}
           - {os: windows-2025, platform: windows-x64, target: x86_64-pc-windows-msvc, format: msi}
-          - {os: windows-11-arm, platform: windows-arm64, target: aarch64-pc-windows-msvc, format: msi}
+          - {os: windows-11-arm, platform: windows-arm64-compat, target: x86_64-pc-windows-msvc, format: msi}
           - {os: macos-15-intel, platform: macos-intel, target: x86_64-apple-darwin, format: dmg}
           - {os: macos-15, platform: macos-apple-silicon, target: aarch64-apple-darwin, format: dmg}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
-          deno-version: v2.9.4
+          deno-version: v2.9.7
       - name: Install Linux GUI runtime
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 xvfb
@@ -50,6 +50,13 @@ jobs:
         run: python scripts/smoke_desktop.py .work/gui-directory
       - name: Build installer
         run: python scripts/build_desktop.py --target '${{ matrix.target }}' --format '${{ matrix.format }}' --output '.work/artifacts/folder-camera-receiver-1.0.0-${{ matrix.platform }}.${{ matrix.format }}'
+      - name: Retain native diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: diagnostics-${{ matrix.platform }}
+          path: .work/desktop-native-smoke.log
+          retention-days: 14
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: receiver-${{ matrix.platform }}

@@ -42,6 +42,7 @@ Deno.serve({ hostname: "127.0.0.1", port: 19446 }, async (request) => {
     "/app.js": "text/javascript",
     "/app.css": "text/css",
     "/icon.png": "image/png",
+    "/licenses.txt": "text/plain; charset=utf-8",
   };
   if (!files[path]) return new Response("Not found", { status: 404 });
   if (path === "/") {
