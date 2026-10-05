@@ -79,6 +79,7 @@ Deno.test("desktop state lock excludes a second process and releases after close
   try {
     await one.init();
     await assert.rejects(() => two.init(), /in use/);
+    await two.close();
     await one.close();
     await two.init();
   } finally {

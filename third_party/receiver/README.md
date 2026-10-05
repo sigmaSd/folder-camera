@@ -1,4 +1,4 @@
-# Receiver npm dependency licenses
+# Receiver dependency licenses
 
 Pinned versions are recorded in receiver/deno.lock. These packages are bundled in desktop distributions. Copies of license/notice files are retained here.
 
@@ -57,3 +57,5 @@ Pinned versions are recorded in receiver/deno.lock. These packages are bundled i
 | y18n | 4.0.3 | ISC |
 | yargs-parser | 18.1.3 | ISC |
 | yargs | 15.4.1 | MIT |
+
+The native notices in `native/` retain the official Deno 2.9.7 MIT license, Laufey 0.7.0 Apache-2.0 license and its CEF BSD notice. Sources: https://github.com/denoland/deno/tree/v2.9.7 and https://github.com/littledivy/laufey/tree/v0.7.0. These are included in the bundled Open-source licenses view.

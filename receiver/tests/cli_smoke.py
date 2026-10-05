@@ -6,7 +6,7 @@ work=base/'.work/cli-smoke'; work.mkdir(exist_ok=True)
 (base/'.work/tmp').mkdir(parents=True,exist_ok=True)
 state=work/'state-home'/'folder-camera'
 env={**os.environ,'TMPDIR':str(base/'.work/tmp'),'XDG_STATE_HOME':str(work/'state-home')}
-cmd=['deno','run','--cached-only','--frozen','--allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA','--allow-sys=networkInterfaces,homedir','--allow-net=127.0.0.1','--allow-read','--allow-write','--allow-run=openssl',str(base/'receiver/src/main.ts'),'--root',str(work/'photos'),'--bind','127.0.0.1','--port','19443']
+cmd=['deno','run','--cached-only','--frozen','--allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA','--allow-sys=networkInterfaces,homedir','--allow-net=127.0.0.1','--allow-read','--allow-write',str(base/'receiver/src/main.ts'),'--root',str(work/'photos'),'--bind','127.0.0.1','--port','19443']
 def start(pair=False, remembered=False):
  startup=cmd[:cmd.index(str(base/'receiver/src/main.ts'))+1] if remembered else cmd
  p=subprocess.Popen(startup+(['--pair'] if pair else []),cwd=base/'receiver',env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)

@@ -33,7 +33,7 @@ blocker.listen()
 occupied = blocker.getsockname()[1]
 (state / 'receiver-config.json').write_text(json.dumps({'version': 1, 'root': str(photos), 'port': occupied, 'bind': 'auto'}))
 cmd = ['deno', 'run', '--cached-only', '--frozen', '--allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA',
-       '--allow-sys=networkInterfaces,homedir', '--allow-net', '--allow-read', '--allow-write', '--allow-run=openssl',
+       '--allow-sys=networkInterfaces,homedir', '--allow-net', '--allow-read', '--allow-write',
        str(base / 'receiver/src/main.ts')]
 
 def start(first=False):

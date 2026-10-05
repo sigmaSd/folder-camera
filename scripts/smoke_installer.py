@@ -24,7 +24,7 @@ elif installer.suffix=='.msi':
         if not launcher.is_file():raise SystemExit('Installed MSI launcher missing: '+str(launcher))
         # Hosted runners have administrator write access. Make the app directory
         # read-only to catch renderer caches incorrectly written beside the exe.
-        subprocess.run(['icacls.exe',str(installed),'/deny','*S-1-5-11:(OI)(CI)(W)'],check=True,timeout=30)
+        subprocess.run(['icacls.exe',str(installed),'/deny','*S-1-5-11:(OI)(CI)(WD,AD,WEA,WA)'],check=True,timeout=30)
         try:
             subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
         finally:

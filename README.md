@@ -57,7 +57,7 @@ No startup flags are needed for a new receiver:
 
 - **Address:** automatically selects a private LAN interface, preferring IPv4 and the lowest-metric Linux default route. Known VPN/container interfaces and zero-MAC tunnel interfaces are skipped. If no route is present, it still selects a suitable local Wi-Fi/Ethernet address without testing internet reachability.
 - **Photos:** `~/Captures` by default. An explicit `--root` is saved and reused on subsequent launches.
-- **State:** `$XDG_STATE_HOME/folder-camera` when XDG_STATE_HOME is absolute, otherwise `~/.local/state/folder-camera`. `--state` remains an override for existing custom state.
+- **State:** Linux uses `$XDG_STATE_HOME/folder-camera` when XDG_STATE_HOME is absolute, otherwise `~/.local/state/folder-camera`; Windows uses `%LOCALAPPDATA%/FolderCamera`; macOS uses `~/Library/Application Support/FolderCamera` (existing legacy profiles are reused). `--state` remains an override for existing custom state.
 - **Port:** starts at 8443, automatically advances if occupied, and remembers the chosen port. An explicit `--port` stays exact and errors if unavailable.
 - **Pairing:** displays the single-use five-minute QR automatically when no authorized device exists. Later runs reuse the receiver identity/certificate/credentials; `--pair` creates a new session when adding or re-pairing a phone.
 
@@ -90,7 +90,7 @@ The example assumes your intended interface belongs to `home`; do not change arb
 
 ### Pairing and syncing
 
-Start the receiver normally; a QR appears automatically on first use. Use `--pair` to request a new session later. Its trusted terminal shows a five-minute, single-use QR and equivalent JSON/manual fields: receiver ID, HTTPS address, SHA-256 certificate fingerprint, and temporary secret. It never prints permanent device tokens.
+Start the receiver normally; a QR appears automatically on first use. Use `--pair` to request a new session later. The GUI shows a five-minute, single-use QR; CLI users see it in the terminal and equivalent JSON/manual fields: receiver ID, HTTPS address, SHA-256 certificate fingerprint, and temporary secret. It never prints permanent device tokens.
 
 On Android, open Settings, grant local network access on Android 17+, then scan the QR and confirm Pair. Manual pairing accepts the same trusted fingerprint and one-time secret. For replacement of a different receiver, use manual pairing and explicitly discard the old delivery tasks before switching; originals remain intact. A QR for a different receiver cannot silently replace it.
 

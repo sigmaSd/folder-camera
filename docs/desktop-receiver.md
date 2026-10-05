@@ -8,7 +8,7 @@ Existing standard CLI profiles, identities and certificates are retained. On mac
 
 ## Packaging
 
-Run `python scripts/build_desktop.py` for a native directory, or select --format AppImage/rpm/deb/msi/app/dmg and --target. All build temporary files remain under .work/tmp. macOS DMG packaging requires a macOS host. GitHub Actions builds/tests Linux x64/ARM64, Windows x64 plus x64 compatibility on ARM64 and macOS Intel/Apple Silicon separately. Windows ARM compatibility packages are explicitly labelled as x64 applications tested on ARM. Distribution links are added only for artifacts that actually exist.
+Run `python scripts/build_desktop.py` for a native directory, or select --format AppImage/rpm/deb/msi/app/dmg and --target. All build temporary files remain under .work/tmp. macOS DMG packaging requires a macOS host. GitHub Actions builds/tests Linux x64/ARM64, Windows x64/ARM64 and macOS Intel/Apple Silicon separately. Distribution links are added only for artifacts that actually exist.
 
 Publisher signing/notarization credentials have not been supplied. Windows/macOS candidates are unsigned or ad-hoc signed and may trigger OS trust prompts. A native build/test result does not imply notarization or trusted publisher signing.
 
@@ -17,8 +17,8 @@ Publisher signing/notarization credentials have not been supplied. Windows/macOS
 - Native Deno Desktop probe proves the second server retains its specified port.
 - Packaged Linux GUI startup initializes the native window/bindings and independent TLS receiver in an isolated fixture profile.
 - Twenty receiver tests pass locally, including folder-change/legacy-receipt migration, certificate continuity, state-lock exclusion, restart repair and no-overwrite behavior.
-- Native platform CI and installer validation are in progress; platform readiness is not claimed before those results pass.
+- Native CI verifies rendered readiness, TLS startup and clean exit, then launches the application from each actual AppImage/MSI/DMG. Windows installs/uninstalls the MSI and denies data writes in Program Files so administrator privileges cannot hide misplaced renderer caches. A final acceptance run is in progress.
 
 The fixture preview is a development tool and is not imported into packaged applications. It contains no real photos or live receiver credentials.
 
-Deno 2.9.3 had broken native callback wrappers (upstream #36065). The project uses Deno 2.9.7, which includes that fix and subsequent desktop lifecycle fixes. The native smoke verifies the rendered Ready state through actual callbacks, not just backend initialization. It also requires clean process shutdown. Windows ARM uses the x64 compatibility build because the upstream native ARM WebView backend is not published with pinned checksums.
+Deno 2.9.3 had broken native callback wrappers (upstream #36065). The project uses Deno 2.9.7, which includes that fix and subsequent desktop lifecycle fixes. The native smoke verifies the rendered Ready state through actual callbacks, not just backend initialization. It also requires clean process shutdown. Deno 2.9.7 ships pinned Laufey 0.7.0 backends, including native Windows ARM64; earlier compatibility builds have been superseded.

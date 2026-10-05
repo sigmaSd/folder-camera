@@ -68,6 +68,15 @@ for (let i = 0; i < Deno.args.length; i++) {
     throw new Error("Invalid desktop argument");
   }
 }
+if (
+  Deno.args.includes("--smoke") &&
+  (!values.has("--state") || !values.has("--root") ||
+    values.get("--bind") !== "127.0.0.1")
+) {
+  throw new Error(
+    "Smoke checks require an explicit isolated state/root and loopback bind",
+  );
+}
 let state = stateDirectory(values.get("--state"), {
   platform: Deno.build.os === "windows" ? "win32" : Deno.build.os,
   home: Deno.env.get("HOME"),
@@ -179,7 +188,8 @@ async function boot() {
     startupError = e instanceof Error ? e.message : "Receiver could not start";
     await receiver.close().catch(() => {});
     if (startupError.includes("in use") && await activateExisting()) {
-      Deno.exit(0);
+      await quit();
+      return;
     }
   }
 }
@@ -305,10 +315,12 @@ window.addEventListener("close", (event) => {
 });
 if (Deno.args.includes("--background") && tray) window.hide();
 await boot();
-networkRefresh = setInterval(() => {
-  if (initialized) void receiver.refreshNetwork();
-}, 5000);
-if (Deno.args.includes("--smoke")) {
+if (!quitting) {
+  networkRefresh = setInterval(() => {
+    if (initialized) void receiver.refreshNetwork();
+  }, 5000);
+}
+if (!quitting && Deno.args.includes("--smoke")) {
   if (!initialized || receiver.snapshot().status !== "ready") {
     throw new Error(
       startupError ?? receiver.snapshot().error ?? "Desktop receiver not ready",

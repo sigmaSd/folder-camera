@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno run --allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA --allow-sys=networkInterfaces,homedir --allow-net --allow-read --allow-write --allow-run=openssl src/main.ts",
+    "start": "deno run --allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA --allow-sys=networkInterfaces,homedir --allow-net --allow-read --allow-write src/main.ts",
     "test": "deno test --allow-read --allow-write --allow-net=127.0.0.1 --allow-env=HOME,XDG_STATE_HOME,LOCALAPPDATA,SystemRoot --allow-sys=networkInterfaces,homedir --allow-ffi tests",
     "check": "deno check src/main.ts desktop/main.ts tests/*.ts",
     "lint": "deno lint src desktop tests",

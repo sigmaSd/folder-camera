@@ -307,6 +307,8 @@ export class Receiver {
     }
   }
   async close() {
+    // A failed duplicate-instance initialization never owns this profile.
+    if (!this.lock) return;
     try {
       await this.stop();
       await this.saveActivity.run(() => Promise.resolve());
