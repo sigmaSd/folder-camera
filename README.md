@@ -125,11 +125,11 @@ Restart the normal listener afterward. An OS advisory lock prevents concurrent s
 
 ## Verification and remaining device checks
 
-See [testing.md](docs/testing.md) for actual results, blockers, and the acceptance checklist; [protocol.md](docs/protocol.md) for the wire contract; [dependencies.md](docs/dependencies.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the dependency audit. F-Droid admission and bit-for-bit reproducibility are not claimed. No release signing keys, telemetry, proprietary QR service, Firebase, Play Services, advertising, or cloud endpoint is used.
+See [testing.md](docs/testing.md) for actual results, blockers, and the acceptance checklist; [protocol.md](docs/protocol.md) for the wire contract; [dependencies.md](docs/dependencies.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the dependency audit. Official F-Droid inclusion is awaiting maintainer review; its clean build, scans and developer-signature APK comparison pass. Release signing keys stay outside Git. The app uses no telemetry, proprietary QR service, Firebase, Play Services, advertising or cloud photo endpoint.
 
 ## Public source and release preparation
 
 Source: https://github.com/sigmasd/folder-camera
 Product/privacy site: https://sigmasd.github.io/folder-camera/
 
-Unsigned CI artifacts are for validation. Signed APK/AAB builds use private keys outside Git; see [release/README.md](release/README.md). The current production identity is distinct from the original prototype `org.foldercamera`; keep the prototype installed while validating the new app and recover/export any private staging before uninstalling it. Saved public-tree photos remain accessible, but private metadata/pairing are not silently transferred between app identities.
+The signed Android APK and tested desktop preview installers are published on the product website. Windows/macOS publisher signing and notarization remain pending. Android APK/AAB builds use private keys outside Git; see [release/README.md](release/README.md). The current production identity is distinct from the original prototype `org.foldercamera`; keep the prototype installed while validating the new app and recover/export any private staging before uninstalling it. Saved public-tree photos remain accessible, but private metadata/pairing are not silently transferred between app identities.
