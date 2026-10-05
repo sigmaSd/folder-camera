@@ -9,6 +9,7 @@ interface NativeWindow extends EventTarget {
   show(): void;
   hide(): void;
   focus(): void;
+  executeJs(code: string): Promise<unknown>;
 }
 interface NativeTray extends EventTarget {
   setIcon(bytes: Uint8Array): void;
@@ -84,6 +85,8 @@ let receiver = new Receiver(state, values),
   startupError: string | null = null;
 let preferences = { version: 1, closeToTray: false };
 let login = false, tray: NativeTray | undefined;
+let activation: Deno.HttpServer | undefined;
+let activationToken: string | undefined;
 const initial = {
   version: 1,
   status: "starting",
@@ -110,6 +113,33 @@ function snapshot() {
     tray: !!tray,
   };
 }
+async function activateExisting() {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      const previous = await readJson<{ port: number; token: string }>(
+        join(state, "desktop-instance.json"),
+      );
+      if (
+        previous && Number.isInteger(previous.port) && previous.port > 0 &&
+        previous.port <= 65535 && /^[0-9a-f]{64}$/.test(previous.token)
+      ) {
+        const response = await fetch(
+          `http://127.0.0.1:${previous.port}/activate`,
+          {
+            method: "POST",
+            headers: { Authorization: "Bearer " + previous.token },
+            signal: AbortSignal.timeout(800),
+          },
+        );
+        if (response.ok) return true;
+      }
+    } catch {
+      /* A CLI-only profile or a starting GUI has no activation listener yet. */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return false;
+}
 async function boot() {
   try {
     await receiver.init();
@@ -119,9 +149,35 @@ async function boot() {
     ) ?? preferences;
     login = await system.autostartEnabled();
     await receiver.start().catch(() => {});
+    if (!activation) {
+      activationToken = [...crypto.getRandomValues(new Uint8Array(32))].map(
+        (n) => n.toString(16).padStart(2, "0"),
+      ).join("");
+      activation = Deno.serve(
+        { hostname: "127.0.0.1", port: 0, onListen() {} },
+        (request) => {
+          if (
+            request.method !== "POST" ||
+            new URL(request.url).pathname !== "/activate" ||
+            request.headers.has("Origin") ||
+            request.headers.get("Authorization") !== "Bearer " + activationToken
+          ) return new Response("Forbidden", { status: 403 });
+          window.show();
+          window.focus();
+          return new Response(null, { status: 204 });
+        },
+      );
+      await durableJson(join(state, "desktop-instance.json"), {
+        port: (activation.addr as Deno.NetAddr).port,
+        token: activationToken,
+      });
+    }
   } catch (e) {
     startupError = e instanceof Error ? e.message : "Receiver could not start";
     await receiver.close().catch(() => {});
+    if (startupError.includes("in use") && await activateExisting()) {
+      Deno.exit(0);
+    }
   }
 }
 window.bind("snapshot", snapshot);
@@ -193,19 +249,23 @@ window.bind("setCloseToTray", async (enabled) => {
   return snapshot();
 });
 let quitting = false;
-async function quit() {
+async function quit(code = 0) {
   if (quitting) return;
   quitting = true;
-  const timeout = setTimeout(() => Deno.exit(0), 5000);
+  const timeout = setTimeout(() => Deno.exit(code), 5000);
   try {
     await receiver.close();
   } finally {
     clearTimeout(timeout);
     tray?.destroy();
-    Deno.exit(0);
+    if (activation) {
+      await activation.shutdown().catch(() => {});
+      await Deno.remove(join(state, "desktop-instance.json")).catch(() => {});
+    }
+    Deno.exit(code);
   }
 }
-window.bind("quit", quit);
+window.bind("quit", () => quit());
 try {
   tray = new native.Tray();
   tray.setIcon(await Deno.readFile(new URL("icon.png", assets)));
@@ -237,11 +297,35 @@ window.addEventListener("close", (event) => {
 });
 if (Deno.args.includes("--background") && tray) window.hide();
 await boot();
+setInterval(() => {
+  if (initialized) void receiver.refreshNetwork();
+}, 5000);
 if (Deno.args.includes("--smoke")) {
   if (!initialized || receiver.snapshot().status !== "ready") {
     throw new Error(
       startupError ?? receiver.snapshot().error ?? "Desktop receiver not ready",
     );
+  }
+  let rendered = false;
+  for (let attempt = 0; attempt < 40; attempt++) {
+    try {
+      const value = await window.executeJs(
+        "document.getElementById('status-title')?.textContent",
+      );
+      const actual = value && typeof value === "object" && "ok" in value &&
+          "value" in value && value.ok === true
+        ? value.value
+        : value;
+      rendered = actual === "Ready to receive";
+    } catch { /* Wait for the bundled document. */ }
+    if (rendered) break;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  if (!rendered) {
+    console.error(
+      "DESKTOP SMOKE FAIL: native receiver UI did not render the ready state",
+    );
+    await quit(1);
   }
   console.log(
     "DESKTOP SMOKE PASS: native window, bindings, independent TLS listener and persistent receiver initialized",

@@ -29,6 +29,8 @@ export class Receiver {
   private recent: Arrival[] = [];
   private active = 0;
   private status = "stopped";
+  private wanted = false;
+  private refreshing = false;
   private error: string | null = null;
   private pairing: Pairing | null = null;
   private qr: string | null = null;
@@ -119,6 +121,7 @@ export class Receiver {
     };
   }
   start() {
+    this.wanted = true;
     return this.mutations.run(() => this.startInner());
   }
   private async startInner() {
@@ -214,6 +217,7 @@ export class Receiver {
     }
   }
   stop() {
+    this.wanted = false;
     return this.mutations.run(() => this.stopInner());
   }
   private async stopInner() {
@@ -270,6 +274,37 @@ export class Receiver {
       }
       return this.snapshot();
     });
+  }
+  /** Refresh the local listener after DHCP/network changes without replacing identity. */
+  async refreshNetwork() {
+    if (!this.wanted || this.refreshing || this.settings.bind !== "auto") {
+      return;
+    }
+    this.refreshing = true;
+    try {
+      await this.mutations.run(async () => {
+        if (!this.wanted) return;
+        const lan = await detectLanAddress().catch(() => null);
+        if (!lan) {
+          if (this.server) await this.stopInner();
+          this.status = "error";
+          this.error = "Connect to Wi-Fi or Ethernet to receive photos.";
+          return;
+        }
+        if (
+          !this.address?.startsWith(
+            `https://${
+              lan.address.includes(":") ? `[${lan.address}]` : lan.address
+            }:`,
+          ) || !this.server
+        ) {
+          await this.stopInner();
+          await this.startInner().catch(() => {});
+        }
+      });
+    } finally {
+      this.refreshing = false;
+    }
   }
   async close() {
     try {
