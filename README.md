@@ -2,6 +2,20 @@
 
 Native Kotlin Android folder camera with an optional TypeScript/Deno desktop receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The 1.0.0 release candidate is being prepared for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
 
+## Screenshots
+
+<p>
+  <a href="site/assets/screenshots/android-paths.png"><img src="site/assets/screenshots/android-paths.png" width="220" alt="Android path selection with searchable nested folders"></a>
+  <a href="site/assets/screenshots/android-camera.png"><img src="site/assets/screenshots/android-camera.png" width="220" alt="Android camera controls with destination, flash and zoom"></a>
+  <a href="site/assets/screenshots/android-settings.png"><img src="site/assets/screenshots/android-settings.png" width="220" alt="Android local storage and optional PC sync settings"></a>
+</p>
+
+Native Android captures with sample folders/photos. The emulator capture omits the live camera preview.
+
+[![Desktop receiver interface preview](site/assets/screenshots/desktop-receiver.jpg)](site/assets/screenshots/desktop-receiver.jpg)
+
+Desktop interface preview with sample data. [Download the Android APK and desktop receiver](https://sigmasd.github.io/folder-camera/).
+
 ## Android build
 
 Requirements: JDK 21 for release/F-Droid parity (prototype checks also ran on JDK 25), Android command-line SDK tools, SDK platform **37.0**, Build Tools **36.0.0**. No Android Studio is required.

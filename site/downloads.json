@@ -1,1 +1,51 @@
-{"android":{"version":"1.0.0","url":"https://github.com/sigmasd/folder-camera/releases/download/v1.0.0/folder-camera-1.0.0.apk","candidate":true},"receiver":{"version":"1.0.0","available":false,"assets":[]}}
+{
+  "android": {
+    "version": "1.0.0",
+    "url": "https://github.com/sigmasd/folder-camera/releases/download/v1.0.0/folder-camera-1.0.0.apk",
+    "candidate": true
+  },
+  "receiver": {
+    "version": "1.0.0",
+    "available": true,
+    "assets": [
+      {
+        "platform": "linux-x64",
+        "label": "Linux \u00b7 x64",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-linux-x64.AppImage",
+        "sha256": "2a443bb02c014e70d8e59f8d4209a0bae13a593d533c6af053693c5cb14bba50"
+      },
+      {
+        "platform": "linux-arm64",
+        "label": "Linux \u00b7 ARM64",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-linux-arm64.AppImage",
+        "sha256": "4f3155f8728ef3ffbc19758f3e6684f6a4b265311e857535134b903c183954a8"
+      },
+      {
+        "platform": "windows-x64",
+        "label": "Windows \u00b7 x64",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-windows-x64.msi",
+        "sha256": "afb16b041b73843eab4d775ba0ee97d60ac70cce7746e18158e7f236a14c9ca1"
+      },
+      {
+        "platform": "windows-arm64",
+        "label": "Windows \u00b7 ARM64",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-windows-arm64.msi",
+        "sha256": "1fb558d965bd1de4e33f34bc6dedb6c9b192fd5ff4c0957fa5de7740954e0176"
+      },
+      {
+        "platform": "macos-intel",
+        "label": "macOS \u00b7 Intel",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-macos-intel.dmg",
+        "sha256": "2c0ced807cb503906edbd776d134602d9654cb30eb1740a2aacc29b7dc371fa1"
+      },
+      {
+        "platform": "macos-apple-silicon",
+        "label": "macOS \u00b7 Apple silicon",
+        "url": "https://github.com/sigmasd/folder-camera/releases/download/receiver-v1.0.0/folder-camera-receiver-1.0.0-macos-apple-silicon.dmg",
+        "sha256": "57b5b406166f1d51ba84e1b42c03a2267a604a7ec8ab58745a6711ed38a2b51d"
+      }
+    ],
+    "candidate": true,
+    "releaseUrl": "https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0"
+  }
+}
