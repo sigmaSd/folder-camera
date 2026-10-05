@@ -22,10 +22,12 @@ try {
         }
     }
     # The package runs without elevation (msidbSumInfoSourceTypeLUAPackage).
-    $summary = $database.SummaryInformation(1)
+    $summary = $database.SummaryInformation(2)
     try {
         $flags = $summary.GetType().InvokeMember('Property', [Reflection.BindingFlags]::GetProperty, $null, $summary, @(15))
         [void]$summary.GetType().InvokeMember('Property', [Reflection.BindingFlags]::SetProperty, $null, $summary, @(15, ([int]$flags -bor 8)))
+        # Native Arm64 MSIs require Windows Installer 5.0 (summary Page Count).
+        [void]$summary.GetType().InvokeMember('Property', [Reflection.BindingFlags]::SetProperty, $null, $summary, @(14, 500))
         $summary.Persist()
     }
     finally { [void][Runtime.InteropServices.Marshal]::ReleaseComObject($summary) }

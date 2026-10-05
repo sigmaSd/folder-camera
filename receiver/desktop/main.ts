@@ -348,7 +348,8 @@ if (!quitting && Deno.args.includes("--smoke")) {
     await quit(1);
   }
   console.log(
-    "DESKTOP SMOKE PASS: native window, bindings, independent TLS listener and persistent receiver initialized",
+    "DESKTOP SMOKE PASS: native window, bindings, independent TLS listener and persistent receiver initialized; target=" +
+      Deno.build.target,
   );
   setTimeout(() => void quit(), 1500);
 }
