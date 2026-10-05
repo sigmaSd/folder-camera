@@ -14,10 +14,17 @@ if installer.suffix=='.AppImage':
     installer.chmod(0o755);environment['APPIMAGE_EXTRACT_AND_RUN']='1'
     subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(installer)],env=environment,check=True)
 elif installer.suffix=='.msi':
-    subprocess.run(['msiexec.exe','/a',str(installer),'/qn','TARGETDIR='+str(work)],check=True,timeout=60)
-    launchers=list(work.rglob('*.exe'))
-    if len(launchers)!=1:raise SystemExit('Could not identify extracted MSI launcher: '+', '.join(str(file) for file in launchers))
-    subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launchers[0])],env=environment,check=True)
+    # The upstream MSI has no AdminExecuteSequence: /a succeeds without files.
+    # Exercise a real installation at its normal Program Files destination.
+    log=ROOT/'.work/desktop-msi-install.log'
+    subprocess.run(['msiexec.exe','/i',str(installer),'/qn','/norestart','/l*v',str(log)],check=True,timeout=60)
+    try:
+        installed=Path(os.environ['ProgramW6432'])/installer.stem
+        launcher=installed/(installer.stem+'.exe')
+        if not launcher.is_file():raise SystemExit('Installed MSI launcher missing: '+str(launcher))
+        subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
+    finally:
+        subprocess.run(['msiexec.exe','/x',str(installer),'/qn','/norestart','/l*v',str(ROOT/'.work/desktop-msi-uninstall.log')],check=True,timeout=60)
 elif installer.suffix=='.dmg':
     mount=work/'mount';mount.mkdir(exist_ok=True)
     subprocess.run(['hdiutil','attach','-nobrowse','-readonly','-mountpoint',str(mount),str(installer)],check=True,timeout=60)

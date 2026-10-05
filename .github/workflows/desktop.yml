@@ -63,6 +63,7 @@ jobs:
           name: diagnostics-${{ matrix.platform }}
           path: |
             .work/desktop-native-smoke.log
+            .work/desktop-msi-*.log
             .work/*.ips
           retention-days: 14
           include-hidden-files: true
