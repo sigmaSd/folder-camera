@@ -15,9 +15,9 @@ import {
 import {
   fail,
   HttpError,
-  Metadata,
+  type Metadata,
   metadata,
-  Receipt,
+  type Receipt,
   same,
 } from "./validation.ts";
 

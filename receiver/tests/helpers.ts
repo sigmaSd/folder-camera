@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { Auth } from "../src/auth.ts";
 import { PhotoStore } from "../src/store.ts";
-import { Metadata } from "../src/validation.ts";
+import type { Metadata } from "../src/validation.ts";
 import { strict as assert } from "node:assert";
 export { assert };
 // A generated development-only 16×16 JPEG; real camera behavior still needs a device.

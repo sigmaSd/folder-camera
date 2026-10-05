@@ -1,5 +1,5 @@
-import { Auth } from "./auth.ts";
-import { PhotoStore } from "./store.ts";
+import type { Auth } from "./auth.ts";
+import type { PhotoStore } from "./store.ts";
 import { decodeMetadata, fail, HttpError, uuid } from "./validation.ts";
 
 const json = (value: unknown, status = 200) =>
