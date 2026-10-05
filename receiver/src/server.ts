@@ -55,7 +55,12 @@ async function boundedJson(request: Request): Promise<unknown> {
     reader.releaseLock();
   }
 }
-export function handler(auth: Auth, store: PhotoStore, maxConcurrency = 2) {
+export function handler(
+  auth: Auth,
+  store: PhotoStore,
+  maxConcurrency = 2,
+  activity?: (delta: number) => void,
+) {
   let active = 0;
   let requests = 0;
   return async (request: Request): Promise<Response> => {
@@ -100,10 +105,12 @@ export function handler(auth: Auth, store: PhotoStore, maxConcurrency = 2) {
       }
       if (active >= maxConcurrency) fail("busy", 429);
       active++;
+      activity?.(1);
       try {
         return json(await store.put(meta, request.body));
       } finally {
         active--;
+        activity?.(-1);
       }
     } catch (e) {
       const error = e instanceof HttpError

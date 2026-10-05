@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Folder Camera Receiver</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header><div class="brand"><img src="icon.png" alt=""><div><strong>Folder Camera</strong><span>Desktop receiver</span></div></div><button class="quiet" id="settings-button" aria-label="Settings">Settings</button></header>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">YOUR PHOTOS. YOUR COMPUTER.</p>
+          <h1>A place for<br>every photo.</h1>
+          <p
+            class="muted">Keep shooting. Your folders arrive here, just as you made them.</p>
+        </div>
+        <div
+          class="status"><span class="dot" id="status-dot"></span><div><strong id="status-title">Starting receiver…</strong><span id="status-subtitle">Getting your local connection ready</span></div><button class="small" id="power">Pause</button></div>
+      </section>
+      <div id="message" role="status" aria-live="polite" hidden></div>
+      <div class="grid">
+        <section class="card pairing">
+          <div
+            class="section-heading"><div><p class="eyebrow">ONE SIMPLE CONNECTION</p><h2>Pair your phone</h2></div><span class="tag">Private LAN</span></div>
+          <div class="pair-content">
+            <div
+              id="qr-wrap"><img id="qr" alt="Scan this code in Folder Camera to pair your phone" hidden><div id="qr-empty"><span class="phone-icon">▣</span><p id="qr-hint">Your pairing code will appear here.</p></div></div>
+            <div
+              class="pair-instructions"><ol><li><span>1</span>Open Folder Camera on your phone.</li><li><span>2</span>Go to Settings → Pair with a receiver.</li><li><span>3</span>Scan this code and enable PC sync.</li></ol><p class="muted" id="expiry">Your phone and computer must use the same local network.</p><button id="pair" class="secondary">Create pairing code</button></div>
+          </div>
+        </section>
+        <section class="card destination">
+          <p class="eyebrow">SAVE TO</p>
+          <div class="folder-art" aria-hidden="true">
+            <svg viewBox="0 0 120 92">
+              <path d="M9 20h38l10 11h54v51H9z" />
+              <path d="M9 35h102" />
+            </svg>
+          </div>
+          <h2 id="folder-name">Captures</h2>
+          <p class="path" id="root">Choosing your default folder…</p>
+          <div
+            class="destination-buttons"><button id="choose">Change folder</button><button class="quiet" id="open">Open folder ↗</button></div>
+          <p
+            class="fine">New photos go here. Earlier photos stay in their original folders.</p>
+        </section>
+      </div>
+      <section class="card activity">
+        <div
+          class="section-heading"><div><p class="eyebrow">IN THEIR PLACE</p><h2>Recent arrivals</h2></div><span class="tag" id="active">No transfers in progress</span></div>
+        <div id="arrivals">
+          <div
+            class="empty"><span class="empty-icon">↓</span><div><strong>Ready for your first photo</strong><p>Take a photo with PC sync enabled. It will appear here when safely saved.</p></div></div>
+        </div>
+      </section>
+      <section class="card phones">
+        <div
+          class="section-heading"><h2>Paired phones</h2><span class="muted" id="phone-count">0 phones</span></div>
+        <div id="devices">
+          <p class="muted">Your paired phones will appear here.</p>
+        </div>
+      </section>
+      <footer><span id="connection">Local storage · Encrypted transfer</span><span>Free &amp; open source · v1.0.0</span></footer>
+    </main>
+    <dialog id="folder-dialog">
+      <form method="dialog"
+        class="dialog-heading"><h2>Choose a capture folder</h2><button class="quiet" aria-label="Close folder chooser">✕</button></form>
+      <div
+        class="folder-navigation"><button class="quiet" id="parent">↑ Up</button><input id="browse-path" aria-label="Folder path"><button id="browse-go" class="small">Go</button></div>
+      <p
+        class="fine">Choose a local folder you control. Shortcuts and symbolic links are not accepted.</p>
+      <div id="folder-list"></div>
+      <div
+        class="dialog-actions"><button id="use-folder">Use this folder</button></div>
+    </dialog>
+    <dialog
+      id="settings-dialog"><form method="dialog" class="dialog-heading"><h2>Receiver settings</h2><button class="quiet" aria-label="Close settings">✕</button></form><label class="setting"><span><strong>Launch at login</strong><small>Start receiving when you sign in.</small></span><input type="checkbox" id="autostart"></label><label class="setting" id="tray-setting"><span><strong>Keep receiving when closed</strong><small>Use the tray icon or reopen the app to return.</small></span><input type="checkbox" id="close-to-tray"></label><p class="fine">Originals remain on your phone. Pairing codes are single-use and expire after five minutes.</p><button id="quit" class="danger">Quit receiver</button></dialog>
+  </body>
+</html>

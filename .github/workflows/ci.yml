@@ -44,7 +44,7 @@ jobs:
         run: |
           deno task check
           deno task lint
-          deno fmt --check src tests deno.json
+          deno fmt --check src desktop tests deno.json
           deno task test
           deno cache --frozen src/main.ts
           python3 tests/cli_smoke.py

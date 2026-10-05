@@ -12,3 +12,6 @@ signing.properties
 *private-key.pem
 __pycache__/
 *.py[cod]
+receiver/native-bin/
+receiver/native/target/
+tls-identity.json

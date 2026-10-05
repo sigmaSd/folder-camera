@@ -1,5 +1,5 @@
 import { homedir } from "node:os";
-import { isAbsolute, join, resolve } from "node:path";
+import { posix, win32 } from "node:path";
 
 /** Linux defaults follow XDG; an explicit --state always wins. */
 export function stateDirectory(
@@ -11,6 +11,11 @@ export function stateDirectory(
     localAppData?: string;
   } = {},
 ): string {
+  const paths = environment.platform === "win32" ||
+      !environment.platform && Deno.build.os === "windows"
+    ? win32
+    : posix;
+  const { isAbsolute, join, resolve } = paths;
   if (explicit !== undefined) {
     if (!explicit) throw new Error("--state must not be empty");
     return resolve(explicit);
@@ -24,6 +29,9 @@ export function stateDirectory(
       local && isAbsolute(local) ? local : join(home, "AppData", "Local"),
       "FolderCamera",
     );
+  }
+  if (environment.platform === "darwin") {
+    return join(home, "Library", "Application Support", "FolderCamera");
   }
   const xdg = environment.xdgStateHome;
   return join(

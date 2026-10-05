@@ -1,5 +1,6 @@
 import { jpegHeader } from "./jpeg.ts";
 import { join, resolve } from "node:path";
+import { independentRoots, privateMode, publishFile } from "./platform.ts";
 import { createHash } from "node:crypto";
 import {
   durableJson,
@@ -20,7 +21,11 @@ import {
   same,
 } from "./validation.ts";
 
+interface StoredReceipt extends Receipt {
+  storageRoot?: string;
+}
 interface Journal {
+  storageRoot?: string;
   metadata: Metadata;
   temp: string;
   receivedAt: number;
@@ -32,6 +37,7 @@ export class PhotoStore {
   private commit = new Serial();
   private locks = new Map<string, { serial: Serial; users: number }>();
   readonly partials: string;
+  onCommitted?: (receipt: Receipt) => void;
   constructor(
     root: string,
     state: string,
@@ -42,11 +48,9 @@ export class PhotoStore {
     this.root = resolve(root);
     this.state = resolve(state);
     this.partials = join(this.root, ".folder-camera-partials");
-    if (
-      this.root === "/" || this.state === "/" || this.state === this.root ||
-      this.state.startsWith(this.root + "/") ||
-      this.root.startsWith(this.state + "/")
-    ) throw new Error("State and photo root must be independent directories");
+    if (!independentRoots(this.root, this.state)) {
+      throw new Error("State and photo root must be independent directories");
+    }
   }
   async init(): Promise<void> {
     await Deno.mkdir(this.root, { recursive: true });
@@ -64,7 +68,7 @@ export class PhotoStore {
     await noLinks(join(this.state, "journals"));
     await Deno.mkdir(this.partials, { recursive: true, mode: 0o700 });
     await noLinks(this.partials);
-    await Deno.chmod(this.partials, 0o700);
+    await privateMode(this.partials, 0o700);
     // Startup precedes serving; published files with a journal are verified before receipt repair.
     for await (const entry of Deno.readDir(join(this.state, "journals"))) {
       if (!/^[0-9a-f-]{36}\.json$/.test(entry.name)) continue;
@@ -86,22 +90,29 @@ export class PhotoStore {
   private journalPath(id: string) {
     return join(this.state, "journals", `${id}.json`);
   }
-  private async destination(m: Metadata, create = false): Promise<string> {
+  private async destination(
+    m: Metadata,
+    create = false,
+    root = this.root,
+  ): Promise<string> {
+    if (!independentRoots(resolve(root), this.state)) fail("unsafe_root", 409);
     m = metadata(m, 256 * 1024 * 1024);
     return join(
-      await portableDirectory(this.root, m.relativePath.split("/"), create),
+      await portableDirectory(root, m.relativePath.split("/"), create),
       m.filename,
     );
   }
   async receipt(id: string): Promise<Receipt | null> {
-    const receipt = await readJson<Receipt>(this.receiptPath(id));
+    const stored = await readJson<StoredReceipt>(this.receiptPath(id));
+    if (!stored) return null;
+    const { storageRoot, ...receipt } = stored;
     if (!receipt) return null;
     if (receipt.receiverId !== this.receiverId) {
       fail("receipt_unavailable", 503);
     }
     try {
       const result = await hashFile(
-        await this.destination(receipt),
+        await this.destination(receipt, false, storageRoot ?? this.root),
         receipt.byteSize,
       );
       if (result.size !== receipt.byteSize || result.hash !== receipt.sha256) {
@@ -115,7 +126,11 @@ export class PhotoStore {
   }
   private async recover(j: Journal): Promise<void> {
     try {
-      const path = await this.destination(j.metadata);
+      const path = await this.destination(
+        j.metadata,
+        false,
+        j.storageRoot ?? this.root,
+      );
       const actual = await hashFile(path, j.metadata.byteSize);
       if (
         actual.size !== j.metadata.byteSize || actual.hash !== j.metadata.sha256
@@ -126,12 +141,37 @@ export class PhotoStore {
         receiverId: this.receiverId,
         receivedAt: j.receivedAt,
       };
-      await durableJson(this.receiptPath(r.photoId), r);
+      await durableJson(this.receiptPath(r.photoId), {
+        ...r,
+        storageRoot: j.storageRoot ?? this.root,
+      });
       await Deno.remove(this.journalPath(r.photoId));
       await syncDirectory(join(this.state, "journals"));
     } catch (e) {
       if (e instanceof Deno.errors.NotFound || e instanceof HttpError) return;
       throw e;
+    }
+  }
+  protected persistReceipt(
+    receipt: Receipt,
+    storageRoot: string,
+  ): Promise<void> {
+    return durableJson(this.receiptPath(receipt.photoId), {
+      ...receipt,
+      storageRoot,
+    });
+  }
+  /** Bind legacy receipts before changing the base; old photos are never redirected. */
+  async bindLegacyDestinations(): Promise<void> {
+    for (const directory of ["receipts", "journals"]) {
+      for await (const entry of Deno.readDir(join(this.state, directory))) {
+        if (!/^[0-9a-f-]{36}\.json$/.test(entry.name)) continue;
+        const path = join(this.state, directory, entry.name);
+        const record = await readJson<Record<string, unknown>>(path);
+        if (record && !record.storageRoot) {
+          await durableJson(path, { ...record, storageRoot: this.root });
+        }
+      }
     }
   }
   put(
@@ -252,19 +292,23 @@ export class PhotoStore {
           };
           await durableJson(this.journalPath(m.photoId), {
             metadata: m,
+            storageRoot: this.root,
             temp,
             receivedAt: receipt.receivedAt,
             committed: false,
           });
           await noLinks(parent);
           await noLinks(this.partials);
-          // link() publishes atomically and fails EEXIST. rename() would overwrite on Linux.
-          await Deno.link(tempPath, join(parent, m.filename));
+          // Platform adapters publish without replacing an occupied name.
+          await publishFile(tempPath, join(parent, m.filename));
           published = true;
           await syncDirectory(parent);
-          await durableJson(this.receiptPath(m.photoId), receipt);
+          await this.persistReceipt(receipt, this.root);
           await Deno.remove(this.journalPath(m.photoId));
           await syncDirectory(join(this.state, "journals"));
+          try {
+            this.onCommitted?.(receipt);
+          } catch { /* UI reporting cannot change a committed receipt. */ }
           return receipt;
         });
       } catch (e) {

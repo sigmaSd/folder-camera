@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { Auth } from "../src/auth.ts";
 import { PhotoStore } from "../src/store.ts";
@@ -29,7 +30,7 @@ export const stream = (data = jpeg) =>
     },
   });
 export async function setup() {
-  const dir = new URL("../../.work/tests/", import.meta.url).pathname;
+  const dir = fileURLToPath(new URL("../../.work/tests/", import.meta.url));
   await Deno.mkdir(dir, { recursive: true });
   const temp = await Deno.makeTempDir({ dir, prefix: "receiver-" });
   const root = join(temp, "photos");

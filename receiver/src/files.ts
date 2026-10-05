@@ -1,6 +1,7 @@
 import { dirname, join, parse, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { fail } from "./validation.ts";
+import { pathIdentity, publishFile, windows } from "./platform.ts";
 
 export async function noLinks(path: string): Promise<void> {
   const absolute = resolve(path);
@@ -12,9 +13,13 @@ export async function noLinks(path: string): Promise<void> {
     const info = await Deno.lstat(current);
     if (info.isSymlink || !info.isDirectory) fail("unsafe_root", 409);
   }
-  if (await Deno.realPath(absolute) !== absolute) fail("unsafe_root", 409);
+  if (pathIdentity(await Deno.realPath(absolute)) !== pathIdentity(absolute)) {
+    fail("unsafe_root", 409);
+  }
 }
 export async function syncDirectory(path: string): Promise<void> {
+  // Windows uses write-through publication; directory fsync is unsupported.
+  if (windows) return;
   const file = await Deno.open(path, { read: true });
   try {
     await file.sync();
@@ -38,7 +43,7 @@ export async function durableJson(path: string, value: unknown): Promise<void> {
     file.close();
   }
   try {
-    await Deno.rename(tmp, path);
+    await publishFile(tmp, path, true);
     await syncDirectory(dirname(path));
   } catch (e) {
     await Deno.remove(tmp).catch(() => {});
@@ -98,7 +103,13 @@ export async function portableDirectory(
           name.normalize("NFC").toLowerCase()
       ) aliases.push(entry.name);
     }
-    if (aliases.length > 1 || aliases.length === 1 && aliases[0] !== name) {
+    if (
+      aliases.length > 1 ||
+      aliases.length === 1 &&
+        (Deno.build.os === "darwin"
+          ? aliases[0].normalize("NFC") !== name.normalize("NFC")
+          : aliases[0] !== name)
+    ) {
       fail("conflict", 409);
     }
     const child = join(parent, name);

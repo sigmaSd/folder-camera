@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { join, resolve } from "node:path";
 import { defaultRoutes, selectLanAddress } from "../src/lan.ts";
 import { pairingNeeded, receiverSettings } from "../src/receiver-settings.ts";
 
@@ -58,23 +59,23 @@ Deno.test("Linux default-route parsing rejects down and non-default routes", () 
   }]);
 });
 Deno.test("zero-option startup defaults are persistent, overrides are remembered and bind auto restores discovery", () => {
-  const defaults = receiverSettings(new Map(), null, "/home/test");
+  const defaults = receiverSettings(new Map(), null, resolve("home-test"));
   assert.deepEqual(defaults, {
     version: 1,
-    root: "/home/test/Captures",
+    root: join(resolve("home-test"), "Captures"),
     port: 8443,
     bind: "auto",
   });
   const saved = receiverSettings(
-    new Map([["--root", "/captures"], ["--port", "9443"], [
+    new Map([["--root", resolve("captures")], ["--port", "9443"], [
       "--bind",
       "127.0.0.1",
     ]]),
     defaults,
-    "/home/test",
+    resolve("home-test"),
   );
   assert.deepEqual(
-    receiverSettings(new Map(), saved, "/different/home"),
+    receiverSettings(new Map(), saved, resolve("different-home")),
     saved,
   );
   assert.equal(
@@ -82,7 +83,7 @@ Deno.test("zero-option startup defaults are persistent, overrides are remembered
     "auto",
   );
   assert.throws(() =>
-    receiverSettings(new Map([["--port", "NaN"]]), null, "/home/test")
+    receiverSettings(new Map([["--port", "NaN"]]), null, resolve("home-test"))
   );
   assert.throws(() => receiverSettings(new Map(), { root: "relative" }));
   assert.equal(pairingNeeded([], false), true);

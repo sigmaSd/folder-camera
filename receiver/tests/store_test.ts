@@ -180,14 +180,20 @@ Deno.test("failure persisting receipt after publication is repaired and never ac
   const f = await setup();
   try {
     const m = meta();
-    await Deno.chmod(join(f.state, "receipts"), 0o500);
-    await rejected(() => f.store.put(m, stream()), "transient_failure");
+    class FailingReceiptStore extends PhotoStore {
+      protected override persistReceipt(): Promise<void> {
+        return Promise.reject(
+          new Deno.errors.PermissionDenied("Injected storage failure"),
+        );
+      }
+    }
+    const failing = new FailingReceiptStore(f.root, f.state, f.auth.receiverId);
+    await rejected(() => failing.put(m, stream()), "transient_failure");
     assert.deepEqual(
       await Deno.readFile(join(f.root, m.relativePath, m.filename)),
       jpeg,
     );
     assert.equal(await f.store.receipt(m.photoId), null);
-    await Deno.chmod(join(f.state, "receipts"), 0o700);
     const restarted = new PhotoStore(f.root, f.state, f.auth.receiverId);
     await restarted.init();
     assert.equal((await restarted.receipt(m.photoId))?.sha256, m.sha256);
@@ -196,7 +202,6 @@ Deno.test("failure persisting receipt after publication is repaired and never ac
       await restarted.receipt(m.photoId),
     );
   } finally {
-    await Deno.chmod(join(f.state, "receipts"), 0o700);
     await f.cleanup();
   }
 });
