@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [master]
-    paths: ['receiver/**', 'scripts/build_desktop.py', 'scripts/smoke_desktop.py', 'scripts/smoke_installer.py', '.github/workflows/desktop.yml']
+    paths: ['receiver/**', 'scripts/build_desktop.py', 'scripts/smoke_desktop.py', 'scripts/smoke_installer.py', 'scripts/package_windows.ps1', '.github/workflows/desktop.yml']
     tags: ['receiver-v*']
 permissions:
   contents: read

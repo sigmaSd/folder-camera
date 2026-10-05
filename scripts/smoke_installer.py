@@ -15,20 +15,16 @@ if installer.suffix=='.AppImage':
     subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(installer)],env=environment,check=True)
 elif installer.suffix=='.msi':
     # The upstream MSI has no AdminExecuteSequence: /a succeeds without files.
-    # Exercise a real installation at its normal Program Files destination.
+    # Exercise the real per-user installation. The renderer needs its private
+    # cache beside the executable; no Program Files/admin write access is assumed.
     log=ROOT/'.work/desktop-msi-install.log'
     subprocess.run(['msiexec.exe','/i',str(installer),'/qn','/norestart','/l*v',str(log)],check=True,timeout=60)
     try:
-        installed=Path(os.environ['ProgramW6432'])/installer.stem
+        installed=Path(os.environ['LOCALAPPDATA'])/'Folder Camera Receiver'
         launcher=installed/(installer.stem+'.exe')
         if not launcher.is_file():raise SystemExit('Installed MSI launcher missing: '+str(launcher))
-        # Hosted runners have administrator write access. Make the app directory
-        # read-only to catch renderer caches incorrectly written beside the exe.
-        subprocess.run(['icacls.exe',str(installed),'/deny','*S-1-5-11:(OI)(CI)(WD,AD,WEA,WA)'],check=True,timeout=30)
-        try:
-            subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
-        finally:
-            subprocess.run(['icacls.exe',str(installed),'/remove:d','*S-1-5-11'],check=True,timeout=30)
+        if (Path(os.environ['ProgramW6432'])/installer.stem).exists():raise SystemExit('MSI unexpectedly installed per-machine')
+        subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
     finally:
         subprocess.run(['msiexec.exe','/x',str(installer),'/qn','/norestart','/l*v',str(ROOT/'.work/desktop-msi-uninstall.log')],check=True,timeout=60)
 elif installer.suffix=='.dmg':

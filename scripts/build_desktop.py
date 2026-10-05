@@ -33,4 +33,7 @@ for attempt in range(3):
         raise subprocess.CalledProcessError(result.returncode,command)
     print('Retrying transient hdiutil resource contention…',flush=True)
     time.sleep(3)
+if a.format=='msi':
+    if os.name!='nt':raise SystemExit('Per-user MSI finalization requires the native Windows builder')
+    subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/package_windows.ps1'),'-MsiPath',str(output)],check=True)
 print(output)
