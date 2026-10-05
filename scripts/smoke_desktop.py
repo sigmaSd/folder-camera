@@ -42,6 +42,8 @@ except subprocess.TimeoutExpired as error:
 log.write_text(result.stdout)
 if result.returncode or 'DESKTOP SMOKE PASS:' not in result.stdout:
     if sys.platform == 'darwin':
+        import time
+        time.sleep(5)
         reports = Path.home() / 'Library/Logs/DiagnosticReports'
         for report in sorted(reports.glob('*.ips'), key=lambda path: path.stat().st_mtime, reverse=True)[:4]:
             if 'gui-directory' in report.name.lower() or 'folder' in report.name.lower():

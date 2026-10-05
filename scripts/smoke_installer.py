@@ -15,8 +15,8 @@ if installer.suffix=='.AppImage':
     subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(installer)],env=environment,check=True)
 elif installer.suffix=='.msi':
     subprocess.run(['msiexec.exe','/a',str(installer),'/qn','TARGETDIR='+str(work)],check=True,timeout=60)
-    launchers=[file for file in work.rglob('*.exe') if 'folder-camera' in file.name.lower()]
-    if len(launchers)!=1:raise SystemExit('Could not identify extracted MSI launcher')
+    launchers=list(work.rglob('*.exe'))
+    if len(launchers)!=1:raise SystemExit('Could not identify extracted MSI launcher: '+', '.join(str(file) for file in launchers))
     subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launchers[0])],env=environment,check=True)
 elif installer.suffix=='.dmg':
     mount=work/'mount';mount.mkdir(exist_ok=True)

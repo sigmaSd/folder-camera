@@ -65,6 +65,7 @@ jobs:
             .work/desktop-native-smoke.log
             .work/*.ips
           retention-days: 14
+          include-hidden-files: true
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: receiver-${{ matrix.platform }}
@@ -73,3 +74,4 @@ jobs:
             .work/artifacts/*.msi
             .work/artifacts/*.dmg
           retention-days: 30
+          include-hidden-files: true

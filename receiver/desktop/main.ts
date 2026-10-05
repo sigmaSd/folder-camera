@@ -34,7 +34,7 @@ const files: Record<string, string> = {
 const csp =
   "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 // The first server belongs to the GUI. Later Deno.serve listeners retain the LAN address/port.
-Deno.serve({ onListen() {} }, async (request) => {
+const uiServer = Deno.serve({ onListen() {} }, async (request) => {
   const path = new URL(request.url).pathname;
   if (request.method !== "GET" || !files[path]) {
     return new Response("Not found", { status: 404 });
@@ -259,12 +259,16 @@ async function quit(code = 0) {
     await receiver.close();
   } finally {
     clearTimeout(timeout);
-    window.close();
     if (activation) {
       await activation.shutdown().catch(() => {});
       await Deno.remove(join(state, "desktop-instance.json")).catch(() => {});
     }
-    Deno.exit(code);
+    clearInterval(networkRefresh);
+    await uiServer.shutdown().catch(() => {});
+    tray?.destroy();
+    window.close();
+    if (Deno.build.os === "darwin") Deno.exitCode = code;
+    else Deno.exit(code);
   }
 }
 window.bind("quit", () => quit());
@@ -300,7 +304,7 @@ window.addEventListener("close", (event) => {
 });
 if (Deno.args.includes("--background") && tray) window.hide();
 await boot();
-setInterval(() => {
+const networkRefresh = setInterval(() => {
   if (initialized) void receiver.refreshNetwork();
 }, 5000);
 if (Deno.args.includes("--smoke")) {
