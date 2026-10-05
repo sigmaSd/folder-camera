@@ -89,6 +89,7 @@ let preferences = { version: 1, closeToTray: false };
 let login = false, tray: NativeTray | undefined;
 let activation: Deno.HttpServer | undefined;
 let activationToken: string | undefined;
+let networkRefresh: ReturnType<typeof setInterval> | undefined;
 const initial = {
   version: 1,
   status: "starting",
@@ -304,7 +305,7 @@ window.addEventListener("close", (event) => {
 });
 if (Deno.args.includes("--background") && tray) window.hide();
 await boot();
-const networkRefresh = setInterval(() => {
+networkRefresh = setInterval(() => {
   if (initialized) void receiver.refreshNetwork();
 }, 5000);
 if (Deno.args.includes("--smoke")) {
