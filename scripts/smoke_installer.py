@@ -22,7 +22,13 @@ elif installer.suffix=='.msi':
         installed=Path(os.environ['ProgramW6432'])/installer.stem
         launcher=installed/(installer.stem+'.exe')
         if not launcher.is_file():raise SystemExit('Installed MSI launcher missing: '+str(launcher))
-        subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
+        # Hosted runners have administrator write access. Make the app directory
+        # read-only to catch renderer caches incorrectly written beside the exe.
+        subprocess.run(['icacls.exe',str(installed),'/deny','*S-1-5-11:(OI)(CI)(W)'],check=True,timeout=30)
+        try:
+            subprocess.run([sys.executable,str(ROOT/'scripts/smoke_desktop.py'),str(launcher)],env=environment,check=True)
+        finally:
+            subprocess.run(['icacls.exe',str(installed),'/remove:d','*S-1-5-11'],check=True,timeout=30)
     finally:
         subprocess.run(['msiexec.exe','/x',str(installer),'/qn','/norestart','/l*v',str(ROOT/'.work/desktop-msi-uninstall.log')],check=True,timeout=60)
 elif installer.suffix=='.dmg':
