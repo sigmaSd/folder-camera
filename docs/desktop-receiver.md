@@ -6,13 +6,13 @@ The implemented interface includes destination selection/opening, expiring QR pa
 
 Existing standard CLI profiles, identities and certificates are retained. On macOS a legacy XDG-style profile is reused when present. Receipt records bind saved photos to their original base directory before a folder change; earlier files are not moved and receipt/retry lookup does not silently redirect them.
 
-The [1.0.0 preview release](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0) contains all six validated installers, SHA256SUMS and a build manifest. The [product website](https://sigmasd.github.io/folder-camera/) links the signed Android APK and each desktop architecture. Publisher signing/notarization and manual OS dialog/tray checks remain open.
+The [1.0.0 release](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0) contains all six validated installers, SHA256SUMS and a build manifest. The [product website](https://sigmasd.github.io/folder-camera/) links the signed Android APK and each desktop architecture. The owner tested the receiver and approved stable release on 2026-10-05. Publisher signing/notarization remains separate and pending.
 
 ## Packaging
 
 Run `python scripts/build_desktop.py` for a native directory, or select --format AppImage/rpm/deb/msi/app/dmg and --target. All build temporary files remain under .work/tmp. macOS DMG packaging requires a macOS host. GitHub Actions builds/tests Linux x64/ARM64, Windows x64/ARM64 and macOS Intel/Apple Silicon separately. Distribution links are added only for artifacts that actually exist. Linux AppImages require WebKitGTK 4.1 and GTK 3 system libraries; Ubuntu 24.04 is the tested baseline. Windows requires the standard WebView2 runtime provided on current Windows 10/11 installations. ARM64 MSI metadata requires Installer 5.0; our finalization step corrects Deno’s 2.0 default.
 
-Publisher signing/notarization credentials have not been supplied. Windows/macOS candidates are unsigned or ad-hoc signed and may trigger OS trust prompts. A native build/test result does not imply notarization or trusted publisher signing.
+Publisher signing/notarization credentials have not been supplied. Windows/macOS packages are unsigned or ad-hoc signed and may trigger OS trust prompts. A native build/test result does not imply notarization or trusted publisher signing.
 
 ## Current validation
 

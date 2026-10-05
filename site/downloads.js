@@ -12,5 +12,5 @@
     if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/sigmasd/folder-camera/releases/download/')) continue;
     const link = document.createElement('a');link.className='button '+(asset.platform.startsWith(platform)?'':'secondary');link.href=url.href;link.textContent=asset.label;area.append(link);
   }
-  const notes = document.createElement('p');notes.className='fine';notes.textContent='Windows/macOS preview builds may show publisher trust prompts. Choose the build for your computer architecture.';area.after(notes);
+  const notes = document.createElement('p');notes.className='fine';notes.textContent='Windows/macOS builds may show publisher trust prompts. Choose the build for your computer architecture.';area.after(notes);
 })().catch(() => {});

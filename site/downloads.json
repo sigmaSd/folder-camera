@@ -45,7 +45,7 @@
         "sha256": "57b5b406166f1d51ba84e1b42c03a2267a604a7ec8ab58745a6711ed38a2b51d"
       }
     ],
-    "candidate": true,
+    "candidate": false,
     "releaseUrl": "https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0"
   }
 }

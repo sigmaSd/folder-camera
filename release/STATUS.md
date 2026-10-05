@@ -37,7 +37,7 @@ Updated 2026-10-04 (Africa/Tunis). This is a factual checklist, not a claim that
 
 The official F-Droid merge request is filed. No Google Play upload or production rollout has been filed yet. The current GitHub APK is an explicitly marked release candidate. Official F-Droid publication depends on its maintainers accepting the merge request; Play publication depends on Google review and the account gates above.
 
-## Desktop receiver preview — 2026-10-05
+## Desktop receiver release — 2026-10-05
 
 - Published all six native installers: https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0.
 - Native source/tests, rendered GUI startup/clean exit and actual installer checks pass on Linux x64/ARM64, Windows x64/ARM64 and macOS Intel/Apple Silicon: https://github.com/sigmaSd/folder-camera/actions/runs/37270255254.
@@ -45,4 +45,4 @@ The official F-Droid merge request is filed. No Google Play upload or production
 - Windows installs per user to avoid the reproduced upstream WebView2 Program Files cache failure. ARM64 MSI schema is corrected to Installer 5.0. macOS closes its window and naturally drains the runtime rather than exiting it abruptly.
 - SHA256SUMS and source/CI provenance accompany the binaries; published asset digests were verified against the accepted artifacts. No Android APK changes were made for this receiver release.
 - README and product website include native Android fixture screenshots and a labelled desktop interface preview. The F-Droid description now embeds its two native Android screenshots; its recipe and pinned source remain unchanged.
-- Desktop trusted publisher signing/Apple notarization and human native-dialog/tray checks remain pending. Linux requires WebKitGTK 4.1/GTK 3 (Ubuntu 24.04 tested); Windows requires WebView2. Automatic Android mDNS address rediscovery remains deferred as specified.
+- The owner tested the receiver and approved promotion to stable on 2026-10-05. Desktop trusted publisher signing/Apple notarization remains pending. Linux requires WebKitGTK 4.1/GTK 3 (Ubuntu 24.04 tested); Windows requires WebView2. Automatic Android mDNS address rediscovery remains deferred as specified.

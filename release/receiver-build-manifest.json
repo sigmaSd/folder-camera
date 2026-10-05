@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "candidate": true,
+  "candidate": false,
   "sourceCommit": "e4b4364fd0f2842d358b1963a15a5251709678a7",
   "runtime": "Deno 2.9.7 / Laufey 0.7.0",
   "acceptanceRun": "https://github.com/sigmaSd/folder-camera/actions/runs/37270255254",
