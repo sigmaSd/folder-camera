@@ -25,5 +25,11 @@ except subprocess.TimeoutExpired as error:
     (ROOT/'.work/desktop-native-smoke.log').write_text(text)
     raise SystemExit('Native GUI startup timed out; retained diagnostics:\n'+text[-6000:])
 log=ROOT/'.work/desktop-native-smoke.log';log.write_text(result.stdout)
-if result.returncode or 'DESKTOP SMOKE PASS:' not in result.stdout: raise SystemExit('Packaged GUI smoke failed (exit '+str(result.returncode)+'); see '+str(log)+'\n'+result.stdout[-6000:])
+if result.returncode or 'DESKTOP SMOKE PASS:' not in result.stdout:
+    if os.uname().sysname=='Darwin' if hasattr(os,'uname') else False:
+        reports=Path.home()/'Library/Logs/DiagnosticReports'
+        for report in sorted(reports.glob('*.ips'),key=lambda p:p.stat().st_mtime,reverse=True)[:4]:
+            if 'gui-directory' in report.name.lower() or 'folder' in report.name.lower():
+                import shutil
+                shutil.copy2(report,ROOT/'.work'/report.name) raise SystemExit('Packaged GUI smoke failed (exit '+str(result.returncode)+'); see '+str(log)+'\n'+result.stdout[-6000:])
 print('PASS: packaged native window/bindings and independent TLS receiver startup')

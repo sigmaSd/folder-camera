@@ -1,6 +1,6 @@
 # Folder Camera
 
-Native Kotlin Android folder camera with an optional TypeScript/Deno LAN receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The 1.0.0 release candidate is being prepared for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
+Native Kotlin Android folder camera with an optional TypeScript/Deno desktop receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The 1.0.0 release candidate is being prepared for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
 
 ## Android build
 
@@ -37,7 +37,9 @@ Portable names are preserved exactly. Limits and rejected names are specified in
 
 ## Optional receiver
 
-Initially supported on Fedora/Linux with a filesystem supporting hard links and file/directory fsync (for example ext4 or Btrfs). Install Deno **2.9.3** and OpenSSL. OpenSSL is used to generate a persistent self-signed certificate on first start. Dependencies are open source and recorded in `receiver/deno.lock`.
+The desktop app provides QR pairing, folder selection, phone management, recent arrivals, tray controls and optional launch at login. Downloadable desktop packages include the runtime and internal certificate generation; users do not install Deno or OpenSSL. See [desktop release documentation](docs/desktop-receiver.md) for platform validation and signing status.
+
+For CLI/source development, install Deno **2.9.7**. Dependencies are open source and pinned in `receiver/deno.lock`; bundled license notices are under `third_party/receiver`.
 
 ```sh
 cd receiver
@@ -65,11 +67,11 @@ If migrating a pre-configuration receiver that already has upload receipts, prov
 
 Photo root and state must remain independent, non-nested directories. Credentials and receipts live only in state, not photo directories. The controlled `.folder-camera-partials/` directory is reserved under the photo root so temporary uploads share the destination filesystem.
 
-On first build/cache preparation, Deno downloads the pinned QR dependencies. Prepare an offline runtime with `deno cache --frozen src/main.ts`; the listener then needs no internet. `deno task start` allows local filesystem/network use and only the `openssl` subprocess. Local interface/home information is allowed through Deno’s narrow `--allow-sys=networkInterfaces,homedir` capability; Linux route selection reads `/proc/net/route`. No external connection is used for detection. You may narrow Deno permissions to your chosen paths and listener once dependencies are cached; filesystem ancestor validation also needs read access to the ancestors of those directories.
+On first build/cache preparation, Deno downloads the pinned QR dependencies. Prepare an offline runtime with `deno cache --frozen src/main.ts`; the listener then needs no internet. `deno task start` allows local filesystem/network use without certificate-generation subprocesses. Local interface/home information is allowed through Deno’s narrow `--allow-sys=networkInterfaces,homedir` capability; Linux route selection reads `/proc/net/route`. No external connection is used for detection. You may narrow Deno permissions to your chosen paths and listener once dependencies are cached; filesystem ancestor validation also needs read access to the ancestors of those directories.
 
 Options: `--max-mib` (1–256, default 64), `--concurrency` (1–8, default 2), `--timeout-seconds` (10–600, default 240). Each transfer also has a 30-second idle timeout, pairing requests a ten-second timeout, and at most 32 concurrent handlers. There is no management web page or HTTP fallback.
 
-Protect the root and its ancestors from untrusted concurrent filesystem mutation. The receiver rejects existing symlinks and ambiguous case/canonical aliases, but Deno path-based calls do not provide complete openat/no-follow race resistance. Windows runtime support is not claimed; junction/reparse-point and durable-publication behavior need platform implementation/testing before Windows support. See [security.md](docs/security.md).
+Protect the root and its ancestors from untrusted concurrent filesystem mutation. The receiver rejects existing symlinks and ambiguous case/canonical aliases, but Deno path-based calls do not provide complete openat/no-follow race resistance. Windows uses native no-replace/write-through publication and private user-profile state. Local NTFS is the initial Windows target; network/removable filesystem durability is not claimed. Desktop platform readiness is recorded separately. See [security.md](docs/security.md).
 
 ### Fedora firewall
 

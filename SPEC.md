@@ -160,7 +160,7 @@ Requirements:
 - Configure maximum photo size and request/concurrency/time limits.
 - Useful logs with secrets excluded; avoid unnecessarily logging full user paths.
 
-No desktop GUI, tray integration, service installer, public server, or cloud deployment is required initially. Document a manually started receiver; optional service instructions can follow.
+Desktop GUI follow-up accepted on 2026-10-05: provide a standalone desktop receiver with folder selection, expiring QR pairing, phone revocation, recent transfers, pause/start, tray controls and optional launch at login. Package ready-to-run downloads for Windows, macOS and Linux and link validated artifacts from the website alongside the signed Android APK. Keep the CLI for advanced use. Preserve existing receiver identities, certificate pins and old photo receipts when changing destinations. Public servers and cloud photo storage remain outside scope.
 
 ## 6. Pairing and transport security
 
