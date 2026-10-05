@@ -25,5 +25,5 @@ except subprocess.TimeoutExpired as error:
     (ROOT/'.work/desktop-native-smoke.log').write_text(text)
     raise SystemExit('Native GUI startup timed out; retained diagnostics:\n'+text[-6000:])
 log=ROOT/'.work/desktop-native-smoke.log';log.write_text(result.stdout)
-if result.returncode or 'DESKTOP SMOKE PASS:' not in result.stdout: raise SystemExit('Packaged GUI smoke failed; see '+str(log)+'\n'+result.stdout[-6000:])
+if result.returncode or 'DESKTOP SMOKE PASS:' not in result.stdout: raise SystemExit('Packaged GUI smoke failed (exit '+str(result.returncode)+'); see '+str(log)+'\n'+result.stdout[-6000:])
 print('PASS: packaged native window/bindings and independent TLS receiver startup')

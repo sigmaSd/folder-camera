@@ -8,6 +8,7 @@ interface NativeWindow extends EventTarget {
   bind(name: string, handler: (...args: unknown[]) => unknown): void;
   show(): void;
   hide(): void;
+  close(): void;
   focus(): void;
   executeJs(code: string): Promise<unknown>;
 }
@@ -258,7 +259,7 @@ async function quit(code = 0) {
     await receiver.close();
   } finally {
     clearTimeout(timeout);
-    tray?.destroy();
+    window.close();
     if (activation) {
       await activation.shutdown().catch(() => {});
       await Deno.remove(join(state, "desktop-instance.json")).catch(() => {});
@@ -292,6 +293,7 @@ try {
   tray = undefined;
 }
 window.addEventListener("close", (event) => {
+  if (quitting) return;
   event.preventDefault();
   if (preferences.closeToTray && tray && !quitting) window.hide();
   else void quit();
