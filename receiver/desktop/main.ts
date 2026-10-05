@@ -89,7 +89,7 @@ let preferences = { version: 1, closeToTray: false };
 let login = false, tray: NativeTray | undefined;
 let activation: Deno.HttpServer | undefined;
 let activationToken: string | undefined;
-let networkRefresh: ReturnType<typeof setInterval> | undefined;
+let networkRefresh: ReturnType<typeof setInterval> | undefined = undefined;
 const initial = {
   version: 1,
   status: "starting",
