@@ -11,7 +11,7 @@ On 2026-10-06 linsui requested R8 and closed the MR because the official templat
 
 Local release build/lint and all thirteen host tests pass. Native Android 16 instrumentation passes, and the actual optimized APK selects a SAF folder, saves a JPEG, and preserves settings/photos across restart on both the 4-KB and 16-KB emulators. Clean official F-Droid/JDK 21 source builds/scans pass. A fresh independent source rebuild with the copied developer signature is byte-identical; full F-Droid download/reference/allowed-signer verification also passes. Signature, production identity, licenses and 16-KB alignment pass. Android 17 emulator testing remains blocked by the documented platform renderer/service failures.
 
-The corrected MR has been reopened; the new submission pipeline is pending. The old nine-job passing pipeline 2911353093 validates only the previous 1.0.0 recipe. New pipeline items remain unchecked until the updated recipe passes.
+The corrected MR has been reopened; all nine jobs pass in pipeline 2916670653: https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2916670653. The old nine-job passing pipeline 2911353093 validates only the previous 1.0.0 recipe. The corrected R8 recipe now passes all nine checks.
 
 Only metadata/io.github.sigmasd.foldercamera.yml is submitted. Descriptions/changelog/images remain upstream. The unrelated local config.yml change in .work/fdroid/data is preserved and excluded. Do not push the superseded folder-camera-submission branch or its listing sidecars.
 
