@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Enable R8 code optimization and resource shrinking for a smaller Android release.
+- Retain the same application/signing identity and existing folder, photo and pairing data.
+
 ## 1.0.0 — release candidate
 
 - Native offline folder camera with explicit destination confirmation and exact nested Unicode paths.

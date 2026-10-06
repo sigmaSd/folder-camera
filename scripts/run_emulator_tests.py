@@ -58,6 +58,7 @@ try:
     subprocess.run([str(adb), 'pull', '/sdcard/Download/folder-camera-store-screenshots', str(screenshot_dir)], check=False)
     if result.returncode:
         raise RuntimeError('Native instrumentation tests failed; see uploaded reports')
+    subprocess.run(['python3', str(root/'scripts/smoke_android_release.py')], check=True)
 finally:
     for name, arguments in [('logcat.log',['logcat','-d']),('services.log',['shell','service','list']),('properties.log',['shell','getprop']),('storage.log',['shell','df','-h'])]:
         with (work/name).open('w') as out:

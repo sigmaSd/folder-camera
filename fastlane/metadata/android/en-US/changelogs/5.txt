@@ -1,0 +1,2 @@
+Smaller download through release code and resource optimization.
+Photos, folder settings and receiver pairing are retained on upgrade.
