@@ -46,16 +46,17 @@ def nodes():
     return list(ET.fromstring(xml).iter('node'))
 
 def find(label, contains=False, timeout=30):
+    labels = [label] if isinstance(label, str) else label
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         for node in nodes():
             if node.get('enabled') == 'false':
                 continue
             values = [node.get('text', ''), node.get('content-desc', '')]
-            if any((label.casefold() in value.casefold() if contains else value.casefold() == label.casefold()) for value in values):
+            if any((expected.casefold() in value.casefold() if contains else value.casefold() == expected.casefold()) for expected in labels for value in values):
                 return node
         time.sleep(.5)
-    raise AssertionError('Release UI missing: ' + label)
+    raise AssertionError('Release UI missing: ' + str(labels) + '\n' + (work / 'ui.xml').read_text())
 
 def tap_node(node):
     bounds = list(map(int, re.findall(r'\d+', node.get('bounds', ''))))
@@ -82,9 +83,9 @@ try:
     launch()
     tap('Settings')
     tap('Choose or regrant base directory')
-    tap('Show roots')
-    tap('Downloads')
-    tap('More options')
+    # The current tree picker opens at device storage and exposes folders
+    # directly; there is no navigation-drawer button in this layout.
+    tap('Download')
     tap('New folder')
     fill('FolderCameraReleaseQA')
     tap('OK')

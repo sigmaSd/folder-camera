@@ -50,3 +50,4 @@ jobs:
             .work/emulator/release-smoke/*.xml
             .work/emulator/release-smoke/*.log
           retention-days: 30
+          include-hidden-files: true
