@@ -40,10 +40,17 @@ command('install', '-r', str(apk))
 command('shell', 'pm', 'grant', PACKAGE, 'android.permission.CAMERA')
 
 def nodes():
-    command('shell', 'uiautomator', 'dump', '--compressed', '/sdcard/folder-camera-release-ui.xml')
-    xml = command('shell', 'cat', '/sdcard/folder-camera-release-ui.xml')
-    (work / 'ui.xml').write_text(xml)
-    return list(ET.fromstring(xml).iter('node'))
+    # During activity transitions Android can return a transient null root.
+    # The caller's bounded wait still fails if the requested UI never appears.
+    try:
+        output = command('shell', 'uiautomator', 'dump', '--compressed', '/sdcard/folder-camera-release-ui.xml')
+        if 'dumped' not in output:
+            return []
+        xml = command('shell', 'cat', '/sdcard/folder-camera-release-ui.xml')
+        (work / 'ui.xml').write_text(xml)
+        return list(ET.fromstring(xml).iter('node'))
+    except (subprocess.CalledProcessError, ET.ParseError):
+        return []
 
 def find(label, contains=False, timeout=30):
     labels = [label] if isinstance(label, str) else label
@@ -56,7 +63,8 @@ def find(label, contains=False, timeout=30):
             if any((expected.casefold() in value.casefold() if contains else value.casefold() == expected.casefold()) for expected in labels for value in values):
                 return node
         time.sleep(.5)
-    raise AssertionError('Release UI missing: ' + str(labels) + '\n' + (work / 'ui.xml').read_text())
+    last = (work / 'ui.xml').read_text() if (work / 'ui.xml').exists() else 'No hierarchy available'
+    raise AssertionError('Release UI missing: ' + str(labels) + '\n' + last)
 
 def tap_node(node):
     bounds = list(map(int, re.findall(r'\d+', node.get('bounds', ''))))
