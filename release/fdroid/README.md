@@ -2,7 +2,7 @@
 
 MR: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
 Fork branch: sigmaSd/fdroiddata, folder-camera
-Updated submission commit: cadb00fe1d45a30de731b2e17c00d1976afc4624
+Updated submission commit: 9fea7c2e49c6d8aa7467a47d44d003f9e38d3226
 Android: 1.0.1 / versionCode 5
 Pinned source: ba0ed7f4c503f0594e8b5af738d193709cbd23aa
 Reference: https://github.com/sigmasd/folder-camera/releases/download/v1.0.1/folder-camera-1.0.1.apk

@@ -51,7 +51,7 @@ The official F-Droid merge request is filed. No Google Play upload or production
 
 - linsui requested R8 and closed !51190 for not using the official template. The exact App inclusion checklist is now used; the owner's disclosure and screenshots are preserved.
 - Android 1.0.1/versionCode 5 enables R8 and resource shrinking. Signed APK size is 2,742,454 bytes, down from 13,097,794. Published at https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.1.
-- Recipe retains only the latest version; source ba0ed7f4c503f0594e8b5af738d193709cbd23aa; fork commit cadb00fe1d45a30de731b2e17c00d1976afc4624.
+- Recipe retains only the latest version; source ba0ed7f4c503f0594e8b5af738d193709cbd23aa; fork commit 9fea7c2e49c6d8aa7467a47d44d003f9e38d3226.
 - Release build/lint and thirteen host tests pass. Native Android 16 tests and optimized-APK capture/restart check pass on the 16-KB image. The 4-KB optimized capture/restart check also passes after bounded accessibility synchronization; Android 17 emulator remains blocked by known platform failures.
 - Official F-Droid source/APK scans, independent byte-identical reproduction, full published-reference comparison/allowed signer, signature/identity/licenses and 16-KB alignment all pass. New GitLab submission pipeline is pending.
 - Signing identity and existing v1.0.0 tag/assets are retained. The 1.0.1 AAB is prepared locally for a future owner-verified Play account, without upload.

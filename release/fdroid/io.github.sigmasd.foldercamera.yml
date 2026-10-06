@@ -12,7 +12,8 @@ AutoName: Folder Camera
 
 RepoType: git
 Repo: https://github.com/sigmasd/folder-camera.git
-Binaries: https://github.com/sigmasd/folder-camera/releases/download/v%v/folder-camera-%v.apk
+Binaries: 
+  https://github.com/sigmasd/folder-camera/releases/download/v%v/folder-camera-%v.apk
 
 Builds:
   - versionName: 1.0.1
