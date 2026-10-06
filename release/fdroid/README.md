@@ -1,18 +1,18 @@
 # Official F-Droid submission
 
-Filed: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
-Pipeline: https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2911353093
+MR: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
 Fork branch: sigmaSd/fdroiddata, folder-camera
-Submission commit: 21579bffd0a9aac3b7657ddeb9614df811a3fd3a
-CI: all nine jobs pass, including full build and APK check.
-Report notes: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190#note_3951938192
+Updated submission commit: cadb00fe1d45a30de731b2e17c00d1976afc4624
+Android: 1.0.1 / versionCode 5
+Pinned source: ba0ed7f4c503f0594e8b5af738d193709cbd23aa
+Reference: https://github.com/sigmasd/folder-camera/releases/download/v1.0.1/folder-camera-1.0.1.apk
 
-The MR adds only metadata/io.github.sigmasd.foldercamera.yml. All English listing text, icon, feature graphic, changelog and native fixture screenshots remain in the upstream fastlane directory, following the App inclusion template. No listing sidecars are submitted to fdroiddata.
+On 2026-10-06 linsui requested R8 and closed the MR because the official template was not followed. The earlier custom checklist was replaced using GitLab's actual App inclusion template, with its wording preserved. The owner's introduction/disclosure and screenshots remain. R8 code optimization and resource shrinking are enabled. The approximately 2.8-MB universal APK retains the signing identity; only the latest version is in the recipe.
 
-The recipe pins full upstream source commit b169eb51a8f195c05051001c906ef4d4e90dedf5. This commit includes the screenshots added after the v1.0.0 tag. Production app sources and build dependencies are unchanged. A clean build from this exact commit in the official F-Droid buildserver image passes source/APK scans, allowed signing certificate checks and reproducibility comparison against the existing public v1.0.0 APK. The public tag has not been moved. Future tagged versions use automatic updates.
+Local release build/lint and all thirteen host tests pass. Native Android 16 instrumentation passes, and the actual optimized APK selects a SAF folder, saves a JPEG, and preserves settings/photos across restart on both the 4-KB and 16-KB emulators. Clean official F-Droid/JDK 21 source builds/scans pass. A fresh independent source rebuild with the copied developer signature is byte-identical; full F-Droid download/reference/allowed-signer verification also passes. Signature, production identity, licenses and 16-KB alignment pass. Android 17 emulator testing remains blocked by the documented platform renderer/service failures.
 
-The local checkout is .work/fdroid/data. Its unrelated local config.yml change is excluded from the submission commit. The older unsubmitted folder-camera-submission branch with sidecars is superseded and must not be pushed.
+The corrected MR has been reopened; the new submission pipeline is pending. The old nine-job passing pipeline 2911353093 validates only the previous 1.0.0 recipe. New pipeline items remain unchecked until the updated recipe passes.
 
-Maintainers still perform review/build and decide admission. A filed MR and local verification do not imply an official app listing. The owner added a personal introduction to the live MR description; preserve it in any future edits. merge-request.md records the generated submission text, and report-notes.md records the posted findings explanation.
+Only metadata/io.github.sigmasd.foldercamera.yml is submitted. Descriptions/changelog/images remain upstream. The unrelated local config.yml change in .work/fdroid/data is preserved and excluded. Do not push the superseded folder-camera-submission branch or its listing sidecars.
 
-Record any subsequent review changes and the final admission/publication result in ../STATUS.md.
+Maintainers decide admission. A passing build and a corrected MR do not mean an official listing exists. Preserve the owner's disclosure on future edits. merge-request.md records the current description.

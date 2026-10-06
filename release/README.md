@@ -1,6 +1,6 @@
 # Release preparation
 
-Target identity: Folder Camera, publisher sigmasd, application ID `io.github.sigmasd.foldercamera`. Current 1.0.0/versionCode 4 artifacts are release candidates until device/store validation is complete. Debug uses `.debug` and keeps the existing prototype app separate.
+Target identity: Folder Camera, publisher sigmasd, application ID `io.github.sigmasd.foldercamera`. Current Android 1.0.1/versionCode 5 enables R8 and resource shrinking. The signed APK passes clean F-Droid source/reference comparison and optimized-APK runtime checks; store publication remains subject to review. Debug uses `.debug` and keeps the existing prototype app separate.
 
 Distribution: same GPL-3.0-or-later app, free on official F-Droid and one-time paid download on Play. No in-app billing SDK, proprietary license checks or runtime Play dependency. Price/company contacts remain owner decisions.
 

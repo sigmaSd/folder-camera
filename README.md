@@ -1,6 +1,6 @@
 # Folder Camera
 
-Native Kotlin Android folder camera with an optional TypeScript/Deno desktop receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The 1.0.0 release candidate is being prepared for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
+Native Kotlin Android folder camera with an optional TypeScript/Deno desktop receiver. The phone is fully usable offline, without pairing, an account, or a PC. Licensed GPL-3.0-or-later. The R8-optimized Android 1.0.1 release is submitted for free F-Droid distribution and a one-time paid Google Play download. Store submission status is tracked in [release/README.md](release/README.md).
 
 ## Screenshots
 

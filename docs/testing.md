@@ -55,3 +55,11 @@ Use a working physical camera device, an on-device SAF root, and a PC root indep
 8. **Crash/idempotency:** kill Android during upload; restart after lease expiry. Interrupt receiver while writing and after file publication; restart and retry a lost acknowledgement. Exactly one completed file and the correct durable receipt must result; partial files must not appear as committed photos.
 9. **Actionable errors and replacement:** fill PC disk, revoke device credential, occupy a filename, and change certificate. Verify distinct failure instructions and explicit retry. Replace active receiver with outstanding tasks: require discard/keep decision and never silently redirect tasks. Select local folders explicitly if sending them to the new receiver.
 10. **Load and security:** test maximum-sized JPEGs and a backlog, concurrent duplicate requests, ID/destination conflicts, symlink descendants, reserved names/traversal/encoded-separator attempts, offline runtime, and backup/device-transfer exclusions. Do not claim Windows support from Linux results.
+
+## Optimized Android release — 2026-10-06
+
+Android 1.0.1/versionCode 5 enables R8 and optimized resource shrinking with the standard Android optimization rules. Library consumer rules preserve CameraDatabase/CameraDatabase_Impl and the persistent UploadWorker name; no blanket keep/dontwarn rules were added.
+
+Release build/lint and all 13 host tests pass. Native Android 16 instrumentation passes. The black-box optimized-APK check on the 16-KB emulator selects storage through the actual SAF picker, saves and verifies a JPEG, restarts the app and verifies settings/photo persistence: https://github.com/sigmaSd/folder-camera/actions/runs/37428464134/job/112153459739. The 4-KB optimized check also passes in run 37429882212 after bounded waits for transient null accessibility roots. Android 17 emulator platform failures remain documented separately.
+
+Clean official F-Droid/JDK 21 builds and source/APK scans pass. A second independent clean build reproduces the developer-signed APK byte-for-byte; the full F-Droid build also downloads the public 1.0.1 reference and verifies both the binary comparison and allowed signing certificate. APK size is 2,742,454 bytes. Signature, production manifest, license assets and 16-KB ZIP/native ELF alignment pass.

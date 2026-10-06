@@ -46,3 +46,12 @@ The official F-Droid merge request is filed. No Google Play upload or production
 - SHA256SUMS and source/CI provenance accompany the binaries; published asset digests were verified against the accepted artifacts. No Android APK changes were made for this receiver release.
 - README and product website include native Android fixture screenshots and a labelled desktop interface preview. The F-Droid description now embeds its two native Android screenshots; its recipe and pinned source remain unchanged.
 - The owner tested the receiver and approved promotion to stable on 2026-10-05. Desktop trusted publisher signing/Apple notarization remains pending. Linux requires WebKitGTK 4.1/GTK 3 (Ubuntu 24.04 tested); Windows requires WebView2. Automatic Android mDNS address rediscovery remains deferred as specified.
+
+## F-Droid review correction — 2026-10-06
+
+- linsui requested R8 and closed !51190 for not using the official template. The exact App inclusion checklist is now used; the owner's disclosure and screenshots are preserved.
+- Android 1.0.1/versionCode 5 enables R8 and resource shrinking. Signed APK size is 2,742,454 bytes, down from 13,097,794. Published at https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.1.
+- Recipe retains only the latest version; source ba0ed7f4c503f0594e8b5af738d193709cbd23aa; fork commit cadb00fe1d45a30de731b2e17c00d1976afc4624.
+- Release build/lint and thirteen host tests pass. Native Android 16 tests and optimized-APK capture/restart check pass on the 16-KB image. The 4-KB optimized capture/restart check also passes after bounded accessibility synchronization; Android 17 emulator remains blocked by known platform failures.
+- Official F-Droid source/APK scans, independent byte-identical reproduction, full published-reference comparison/allowed signer, signature/identity/licenses and 16-KB alignment all pass. New GitLab submission pipeline is pending.
+- Signing identity and existing v1.0.0 tag/assets are retained. The 1.0.1 AAB is prepared locally for a future owner-verified Play account, without upload.

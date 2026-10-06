@@ -1,3 +1,7 @@
+# Historical 1.0.0 report explanation
+
+This records the earlier posted note. Android 1.0.1 now enables R8 and resource shrinking; see merge-request.md for current evidence.
+
 All nine jobs pass in [pipeline #2911353093](https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2911353093), including the source build and APK check.
 
 The 13 code-quality report findings are explained as follows:
