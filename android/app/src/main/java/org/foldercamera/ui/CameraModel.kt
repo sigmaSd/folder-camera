@@ -18,6 +18,7 @@ class CameraModel(application: Application) : AndroidViewModel(application) {
     var root by mutableStateOf(app.config.root)
     var sync by mutableStateOf(app.config.syncEnabled)
     var receiver by mutableStateOf(runCatching { app.config.receiver() }.getOrNull())
+    var receiverToReplace by mutableStateOf<Receiver?>(null)
     var error by mutableStateOf<String?>(null)
     var lightMode by mutableStateOf(LightMode.OFF)
     var zoomRatio by mutableFloatStateOf(1f)
@@ -48,18 +49,40 @@ class CameraModel(application: Application) : AndroidViewModel(application) {
         error = PortablePath.validate(path)
         if (error == null && root != null) { gate.confirm(root!!, path); app.config.lastPath = path; screen = "camera" }
     }
-    fun back() { screen = if (gate.session != null) "camera" else "destination" }
+    fun back() { gate.session?.let { path = it.path }; screen = if (gate.session != null) "camera" else "destination" }
     fun selectRoot(uri: String) {
         root = uri; folderPaths = emptyList(); rootName = null; app.config.root = uri; gate.reset(); screen = "destination"; error = null; refreshFolders()
     }
     fun retryLocal() { app.scope.launch { app.store.reconcile(); app.delivery.kick() } }
     fun toggleSync(value: Boolean) { sync = value; app.config.syncEnabled = value; if (value) app.delivery.kick() else app.delivery.pause() }
     fun retryNetwork() { app.scope.launch { receiver?.let { app.db.dao().retry(it.id) }; app.delivery.kick() } }
-    fun importFolders(paths: Set<String>) { app.scope.launch {
-        val r = receiver ?: return@launch
-        app.db.dao().saved().filter { it.relativePath in paths }.forEach { app.db.dao().enqueue(Delivery(it.photoId, r.id)) }
+    // Complete this short local change even if the calling screen leaves composition.
+    suspend fun connectReceiver(next: Receiver, replace: Boolean = false) = withContext(NonCancellable) {
+        val differentPc = receiver?.let { it.id != next.id } == true
+        if (differentPc && !replace) {
+            receiverToReplace = next; screen = "settings"
+            return@withContext
+        }
+        val resume = sync
+        if (differentPc) toggleSync(false)
+        try {
+            withContext(Dispatchers.IO) {
+                check(org.foldercamera.sync.ReceiverConnections(app.db.dao(), app.config::receiver, app.config::setReceiver).connect(next, replace))
+            }
+            receiver = next; receiverToReplace = null; error = null
+            screen = "settings"
+        } finally {
+            if (differentPc) toggleSync(resume)
+        }
         app.delivery.kick()
-    } }
+    }
+    fun importFolders(paths: Set<String>) {
+        val selectedReceiver = receiver ?: return
+        app.scope.launch {
+            app.db.dao().saved().filter { it.relativePath in paths }.forEach { app.db.dao().enqueue(Delivery(it.photoId, selectedReceiver.id)) }
+            app.delivery.kick()
+        }
+    }
     fun capture(take: (java.io.File, (Boolean) -> Unit) -> Unit) {
         val session = gate.session ?: return
         if (busy) return

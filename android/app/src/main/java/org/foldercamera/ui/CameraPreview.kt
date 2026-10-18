@@ -95,8 +95,9 @@ fun CameraPreview(
     }
     AndroidView(modifier = modifier, factory = { view })
 }
-fun takePhoto(context: Context, capture: ImageCapture, file: File, complete: (Boolean) -> Unit) {
+fun takePhoto(context: Context, capture: ImageCapture, file: File, complete: (Boolean) -> Unit, onShutter: () -> Unit = {}) {
     capture.takePicture(ImageCapture.OutputFileOptions.Builder(file).build(), ContextCompat.getMainExecutor(context), object : ImageCapture.OnImageSavedCallback {
+        override fun onCaptureStarted() { onShutter() }
         override fun onImageSaved(result: ImageCapture.OutputFileResults) { complete(true) }
         override fun onError(exception: ImageCaptureException) { complete(false) }
     })

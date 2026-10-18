@@ -9,6 +9,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--api', required=True)
 parser.add_argument('--target', required=True)
 args = parser.parse_args()
+# The 16-KB Google API images exhaust a 3-GB guest during first-boot services
+# and can kill foreground instrumentation before any app assertion runs.
+guest_memory = 6144 if '16k' in args.target else 3072
 root = Path(__file__).resolve().parents[1]
 work = root/'.work/emulator'
 work.mkdir(parents=True, exist_ok=True)
@@ -26,14 +29,15 @@ avd_path = avd_home/'folder-camera-tests.avd'
 subprocess.run([str(avdmanager), 'create', 'avd', '--force', '--name', 'folder-camera-tests', '--package', image, '--device', 'pixel_7', '--path', str(avd_path)], input='no\n', text=True, check=True, env=environment)
 avd = avd_path/'config.ini'
 with avd.open('a') as out:
-    out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\ndisk.dataPartition.size=8G\n')
+    out.write(f'\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize={guest_memory}\nhw.camera.back=emulated\ndisk.dataPartition.size=8G\n')
 subprocess.run([str(adb), 'start-server'], check=True)
 log = (work/'emulator.log').open('w')
-process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
+process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', str(guest_memory), '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
 def shell(*arguments):
     return subprocess.run([str(adb), '-s', 'emulator-5554', 'shell', *arguments], capture_output=True, text=True)
 try:
     deadline = time.monotonic()+600
+    ready_checks = 0
     while time.monotonic() < deadline:
         if process.poll() is not None:
             raise RuntimeError(f'Emulator exited before boot with {process.returncode}')
@@ -42,12 +46,24 @@ try:
         input_service = shell('service', 'check', 'input')
         settings = shell('service', 'check', 'settings')
         provider = shell('settings', 'get', 'global', 'device_provisioned')
-        if boot.stdout.strip() == '1' and provider.returncode == 0 and 'Exception' not in provider.stderr and provider.stdout.strip() in ('0','1','null') and all('found' in r.stdout and 'not found' not in r.stdout for r in [package, input_service, settings]):
-            print('Android boot property AND package/input/settings services are ready.', flush=True)
-            break
+        services_ready = boot.stdout.strip() == '1' and provider.returncode == 0 and 'Exception' not in provider.stderr and provider.stdout.strip() in ('0','1','null') and all('found' in r.stdout and 'not found' not in r.stdout for r in [package, input_service, settings])
+        user = shell('am', 'get-started-user-state', '0')
+        if services_ready and user.stdout.strip() == 'RUNNING_UNLOCKED':
+            ready_checks += 1
+            if ready_checks >= 3:
+                print('Android services and credential-encrypted storage are ready (three consecutive checks).', flush=True)
+                break
+        else:
+            ready_checks = 0
+            if services_ready:
+                # This is our fresh emulator, with no PIN or user account.
+                # sys.boot_completed alone does not guarantee CE storage is unlocked.
+                shell('input', 'keyevent', '82')
+                shell('wm', 'dismiss-keyguard')
+                shell('am', 'unlock-user', '0')
         time.sleep(2)
     else:
-        raise RuntimeError('Android framework services did not become ready within ten minutes')
+        raise RuntimeError('Android services and unlocked user storage did not become ready within ten minutes')
     shell('input', 'keyevent', '82')
     for name in ['window_animation_scale','transition_animation_scale','animator_duration_scale']:
         shell('settings', 'put', 'global', name, '0')

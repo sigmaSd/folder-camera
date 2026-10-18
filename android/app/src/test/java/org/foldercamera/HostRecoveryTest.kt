@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.DocumentsContract
 import androidx.room.Room
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import org.foldercamera.data.*
 import org.foldercamera.storage.*
 import org.junit.Assert.*
@@ -97,6 +98,38 @@ class HostRecoveryTest {
         assertNull(db.dao().claim("old-receiver", 602001))
         db.dao().finish(c.photoId, "old-receiver", retry.claim!!, "RECEIVED", 0, null, "valid")
         assertEquals(0, db.dao().outstanding("old-receiver"))
+    }
+    @Test fun anotherPcRequiresConsentAndNeverInheritsTheOldQueue() = runBlocking {
+        val old = Receiver("old-pc", "https://192.168.1.2:8443", "a".repeat(64), "old-token")
+        val next = Receiver("new-pc", "https://192.168.1.3:8443", "b".repeat(64), "new-token")
+        var active = old
+        val connections = org.foldercamera.sync.ReceiverConnections(db.dao(), { active }, { active = it })
+        val c = staged(receiver = old.id); PhotoStore(context, db.dao()).persist(c.photoId)
+        val sending = db.dao().claim(old.id, 1000)!!
+        assertFalse(connections.connect(next))
+        assertEquals(old, active); assertEquals(1, db.dao().outstanding(old.id))
+        assertNull(db.dao().claim(next.id, 1000))
+        assertTrue(connections.connect(next, replace = true))
+        assertEquals(next, active); assertEquals(0, db.dao().outstanding(old.id))
+        db.dao().finish(c.photoId, old.id, sending.claim!!, "RECEIVED", 0, null, "late-receipt")
+        val deliveries = db.dao().observeDeliveries().first()
+        assertEquals("DISCARDED", deliveries.single().state)
+        assertTrue(deliveries.none { it.receiverId == next.id })
+        val newPhoto = staged(receiver = next.id); PhotoStore(context, db.dao()).persist(newPhoto.photoId)
+        assertEquals(newPhoto.photoId, db.dao().claim(next.id, 1000)!!.photoId)
+        assertEquals("SAVED", db.dao().capture(c.photoId)!!.state)
+    }
+    @Test fun verifyingSamePcWithNewAddressOrCredentialsReleasesFailedAndDeferredTasks() = runBlocking {
+        val original = Receiver("same-pc", "https://192.168.1.2:8443", "a".repeat(64), "old-token")
+        var active = original
+        val connections = org.foldercamera.sync.ReceiverConnections(db.dao(), { active }, { active = it })
+        val c = staged(receiver = original.id); PhotoStore(context, db.dao()).persist(c.photoId)
+        val failed = db.dao().claim(original.id, 1000)!!
+        db.dao().finish(c.photoId, original.id, failed.claim!!, "FAILED", 9_000_000, "unauthenticated", null)
+        val renewed = original.copy(endpoint = "https://192.168.1.8:8443", token = "new-token")
+        assertTrue(connections.connect(renewed))
+        assertEquals(renewed, active)
+        assertEquals(c.photoId, db.dao().claim(original.id, 1001)!!.photoId)
     }
 }
 
