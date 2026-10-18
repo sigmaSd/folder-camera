@@ -74,8 +74,14 @@ def tap_node(node):
 def tap(label, contains=False):
     tap_node(find(label, contains))
 
-def fill(value):
-    edit = next(node for node in nodes() if node.get('class') == 'android.widget.EditText')
+def fill(value, label=None):
+    if label:
+        tap(label)
+    edits = [node for node in nodes() if node.get('class') == 'android.widget.EditText']
+    if label:
+        edits = [node for node in edits if node.get('focused') == 'true']
+    assert len(edits) == 1, f'Expected one editable field for {label}: {[node.attrib for node in edits]}'
+    edit = edits[0]
     tap_node(edit)
     command('shell', 'input', 'keyevent', 'KEYCODE_MOVE_END')
     for _ in range(len(edit.get('text', ''))):
@@ -100,7 +106,7 @@ try:
     tap('USE THIS FOLDER')
     tap('ALLOW')
     find('Choose a folder')
-    fill('Projects/Release')
+    fill('Projects/Release', label='Relative folder path')
     tap('Start camera')
     tap('Take photo')
     find('1 saved locally', timeout=60)

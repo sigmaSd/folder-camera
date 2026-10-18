@@ -46,7 +46,6 @@ import org.json.JSONObject
     var manualExpanded by remember { mutableStateOf(false) }
     var payloadExpanded by remember { mutableStateOf(false) }
     var operation by remember { mutableStateOf(false) }
-    var replace by remember { mutableStateOf<Receiver?>(null) }
     var verified by remember { mutableStateOf(false) }
     val lan = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) showEnable = true }
     fun hasLan() = Build.VERSION.SDK_INT < 37 || ContextCompat.checkSelfPermission(context, "android.permission.ACCESS_LOCAL_NETWORK") == PackageManager.PERMISSION_GRANTED
@@ -56,9 +55,8 @@ import org.json.JSONObject
         scope.launch {
             try {
                 val paired = withContext(Dispatchers.IO) { PinnedTransport(context).pair(Pairing.parse(text)) }
-                val old = model.receiver
-                if (old != null && old.id != paired.id) replace = paired
-                else { model.app.config.setReceiver(paired); model.receiver = paired }
+                verified = false
+                model.connectReceiver(paired)
             } catch (_: Exception) { model.error = "pair_failed" }
             finally { operation = false }
         }
@@ -84,21 +82,17 @@ import org.json.JSONObject
         }
         if (Build.VERSION.SDK_INT >= 37) TextButton(onClick = { lan.launch("android.permission.ACCESS_LOCAL_NETWORK") }) { Text(stringResource(R.string.allow_lan)) }
         if (model.receiver != null) {
-            Text(stringResource(R.string.paired_receiver, model.receiver!!.id))
+            Text(stringResource(R.string.paired_pc), style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.address_update_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedTextField(address, { address = it; verified = false }, label = { Text(stringResource(R.string.endpoint)) }, modifier = Modifier.fillMaxWidth())
             Button(enabled = !operation, onClick = {
                 operation = true; scope.launch {
-                    try { val updated = model.receiver!!.copy(endpoint = address); withContext(Dispatchers.IO) { PinnedTransport(context).health(updated) }; model.app.config.setReceiver(updated); model.receiver = updated; verified = true; model.app.delivery.kick() }
-                    catch (_: Exception) { model.error = "pair_failed" }; operation = false
+                    try { val updated = model.receiver!!.copy(endpoint = address); withContext(Dispatchers.IO) { PinnedTransport(context).health(updated) }; model.connectReceiver(updated); verified = true }
+                    catch (_: Exception) { model.error = "address_failed" }; operation = false
                 }
             }) { Text(stringResource(R.string.verify_address)) }
             if (verified) Text(stringResource(R.string.connection_verified))
-            Text(stringResource(if (model.sync) R.string.upload_pending else R.string.upload_paused))
-            Button(onClick = model::retryNetwork, enabled = model.sync) { Text(stringResource(R.string.retry_now)) }
-            deliveries.filter { it.state !in listOf("RECEIVED", "DISCARDED") }.forEach { delivery ->
-                Text(stringResource(when { !model.sync -> R.string.upload_paused; delivery.state == "SENDING" -> R.string.sending; delivery.state == "FAILED" -> R.string.upload_failed; else -> R.string.upload_pending }))
-                delivery.lastError?.let { Text(uploadError(it)) }
-            }
+            TransferStatus(model, deliveries, captures)
         }
         }
         SectionCard(stringResource(R.string.pair_heading), Glyph.CAMERA) {
@@ -130,9 +124,9 @@ import org.json.JSONObject
             }
         }
     }, confirmButton = { TextButton(onClick = { if (includeExisting) model.importFolders(selectedPaths); model.toggleSync(true); showEnable = false }) { Text(stringResource(R.string.enable)) } }, dismissButton = { TextButton(onClick = { showEnable = false }) { Text(stringResource(R.string.cancel)) } })
-    replace?.let { r -> AlertDialog(onDismissRequest = { replace = null }, title = { Text(stringResource(R.string.replace_receiver)) }, text = { Text(stringResource(R.string.replace_help)) }, confirmButton = {
-        TextButton(onClick = { scope.launch { model.toggleSync(false); model.receiver?.let { model.app.db.dao().discard(it.id) }; model.app.config.setReceiver(r); model.receiver = r; replace = null } }) { Text(stringResource(R.string.discard_replace)) }
-    }, dismissButton = { TextButton(onClick = { replace = null }) { Text(stringResource(R.string.keep_receiver)) } }) }
+    model.receiverToReplace?.let { r -> AlertDialog(onDismissRequest = { if (!operation) model.receiverToReplace = null }, title = { Text(stringResource(R.string.replace_receiver)) }, text = { Text(stringResource(R.string.replace_help)) }, confirmButton = {
+        TextButton(enabled = !operation, onClick = { operation = true; scope.launch { try { model.connectReceiver(r, replace = true); verified = false } catch (_: Exception) { model.error = "pair_failed" } finally { operation = false } } }) { Text(stringResource(R.string.discard_replace)) }
+    }, dismissButton = { TextButton(enabled = !operation, onClick = { model.receiverToReplace = null }) { Text(stringResource(R.string.keep_receiver)) } }) }
 }
 @Composable fun QrScreen(model: CameraModel) {
     val context = LocalContext.current
@@ -156,13 +150,12 @@ import org.json.JSONObject
                 busy = true; scope.launch {
                     try {
                         require(model.app.delivery.allowed() || Build.VERSION.SDK_INT < 37 || ContextCompat.checkSelfPermission(context, "android.permission.ACCESS_LOCAL_NETWORK") == PackageManager.PERMISSION_GRANTED)
-                        // Receiver replacement is handled in manual settings, with an explicit queue decision.
-                        require(model.receiver == null || model.receiver!!.id == p.receiverId)
                         val r = withContext(Dispatchers.IO) { PinnedTransport(context).pair(p) }
-                        model.app.config.setReceiver(r); model.receiver = r; model.screen = "settings"
+                        model.connectReceiver(r)
                     } catch (_: Exception) { model.error = "pair_failed" }; busy = false
                 }
             }) { Text(stringResource(R.string.pair)) }
+            TextButton(onClick = { scanned = null }, enabled = !busy) { Text(stringResource(R.string.scan_again)) }
         }
     }
 }

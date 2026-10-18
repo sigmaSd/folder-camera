@@ -11,7 +11,6 @@
     <string name="relative_path">Relative folder path</string>
     <string name="path_example">Projects/Job_A/Before</string>
     <string name="start_camera">Start camera</string>
-    <string name="cancel_change">Cancel — keep current destination</string>
     <string name="paths">Paths</string>
     <string name="change_folder">Change folder</string>
     <string name="camera_permission_help">Camera access is needed only for taking photos and scanning pairing QR codes.</string>
@@ -64,7 +63,7 @@
     <string name="keep_receiver">Keep original receiver</string>
     <string name="qr_help">Scan the one-time QR displayed by your trusted PC. No online scanner service is used.</string>
     <string name="scan_again">Scan again</string>
-    <string name="qr_replace_help">For a different receiver, use Settings manual pairing and confirm the pending-task decision.</string>
+    <string name="qr_replace_help">Scanning another PC will let you replace the paired receiver. Old queued photos are never sent to a different PC automatically.</string>
     <string name="path_empty">Enter a relative folder path.</string>
     <string name="path_long">The path must be at most 1,024 UTF-8 bytes.</string>
     <string name="path_depth">Use at most 32 folder levels.</string>
@@ -127,5 +126,21 @@
     <string name="open_source_license">GPL-3.0-or-later license</string>
     <string name="source_code">Source code</string>
     <string name="help_feedback">Help and feedback</string>
+    <string name="search_files">Search this folder</string>
+    <string name="no_matching_files">No files or folders match your search.</string>
+    <string name="refresh_files">Refresh files</string>
+    <string name="browser_unavailable">Cannot read this folder. Regrant access in Settings or choose another folder.</string>
+    <string name="photo_unavailable">Cannot open this photo. Check folder access or refresh the file list.</string>
+    <string name="close_photo">Close photo</string>
+    <string name="paired_pc">Paired PC</string>
+    <string name="address_update_help">Update the address below only if the same PC moved to another address. To switch computers, scan the new PC’s pairing QR.</string>
+    <string name="address_failed">Could not verify the paired PC at this address. To connect a different PC or a reinstalled receiver, scan its new pairing QR.</string>
+    <string name="transfers_current">Up to date</string>
+    <string name="transfers_sending">Sending to your PC</string>
+    <string name="transfers_waiting">Waiting to send</string>
+    <string name="transfers_attention">Some photos need attention</string>
+    <string name="transfer_totals">%1$d delivered · %2$d waiting · %3$d sending · %4$d failed</string>
+    <string name="transfer_details">View queue (%1$d)</string>
+    <string name="transfer_queue">Transfer queue</string>
     <string name="app_version">Version %1$s · by sigmasd</string>
 </resources>

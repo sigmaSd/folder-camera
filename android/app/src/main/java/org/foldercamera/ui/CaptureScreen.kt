@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +29,7 @@ import org.foldercamera.R
 import org.foldercamera.data.Capture
 import org.foldercamera.data.Delivery
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable fun CaptureScreen(model: CameraModel, captures: List<Capture>, deliveries: List<Delivery>) {
     val context = LocalContext.current
@@ -36,6 +38,21 @@ import java.util.Locale
     var handle by remember { mutableStateOf<CameraHandle?>(null) }
     var flashMenu by remember { mutableStateOf(false) }
     var fullPath by remember { mutableStateOf(false) }
+    var shutterEvent by remember { mutableIntStateOf(0) }
+    val shutterOpacity = remember { androidx.compose.animation.core.Animatable(0f) }
+    val shutterScale = remember { androidx.compose.animation.core.Animatable(1f) }
+    val view = androidx.compose.ui.platform.LocalView.current
+    LaunchedEffect(shutterEvent) {
+        if (shutterEvent > 0) {
+            view.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            shutterOpacity.snapTo(.8f)
+            shutterScale.snapTo(.9f)
+            kotlinx.coroutines.coroutineScope {
+                launch { shutterOpacity.animateTo(0f, androidx.compose.animation.core.tween(220)) }
+                launch { shutterScale.animateTo(1f, androidx.compose.animation.core.tween(180)) }
+            }
+        }
+    }
     val session = model.gate.session ?: return
     val currentPhotos = remember(captures, session) { captures.filter { it.baseTreeUri == session.root && it.relativePath == session.path } }
     val savedCount = currentPhotos.count { it.state == "SAVED" }
@@ -84,6 +101,8 @@ import java.util.Locale
                 Surface(color = Color.Black.copy(alpha = .55f), shape = RoundedCornerShape(12.dp), modifier = Modifier.align(Alignment.BottomCenter).padding(14.dp)) {
                     Text(stringResource(R.string.photos_saved_short, savedCount), Modifier.padding(horizontal = 12.dp, vertical = 7.dp), color = Color.White, style = MaterialTheme.typography.labelMedium)
                 }
+                // This overlay never participates in layout and fires at CameraX's actual capture callback.
+                Box(Modifier.matchParentSize().background(Color.Black.copy(alpha = shutterOpacity.value)))
             }
             if (maxZoom > minZoom) Row(Modifier.padding(start = 22.dp, end = 22.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 val zoomLabel = stringResource(R.string.zoom)
@@ -94,7 +113,7 @@ import java.util.Locale
                 Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(CameraColors.surfaceVariant).clickable(enabled = latest != null) { model.screen = "browser" }.semantics { contentDescription = thumbnailLabel }, contentAlignment = Alignment.Center) {
                     if (latest != null) PhotoImage(latest.destinationDocumentUri, Modifier.fillMaxSize()) else GlyphIcon(Glyph.PHOTO, tint = CameraColors.onSurfaceVariant)
                 }
-                Box(Modifier.size(78.dp).border(3.dp, if (handle != null && !model.busy) Color.White else CameraColors.onSurfaceVariant, CircleShape).padding(7.dp).clip(CircleShape).background(if (model.busy) CameraColors.primary else Color.White).clickable(enabled = handle != null && !model.busy) { handle?.let { h -> model.capture { file, done -> takePhoto(context, h.capture, file, done) } } }.semantics { contentDescription = shutterLabel }, contentAlignment = Alignment.Center) {
+                Box(Modifier.size(78.dp).scale(shutterScale.value).border(3.dp, if (handle != null && !model.busy) Color.White else CameraColors.onSurfaceVariant, CircleShape).padding(7.dp).clip(CircleShape).background(if (model.busy) CameraColors.primary else Color.White).clickable(enabled = handle != null && !model.busy) { handle?.let { h -> model.capture { file, done -> takePhoto(context, h.capture, file, done, onShutter = { shutterEvent++ }) } } }.semantics { contentDescription = shutterLabel }, contentAlignment = Alignment.Center) {
                     if (model.busy) CircularProgressIndicator(Modifier.size(24.dp), color = CameraColors.onPrimary, strokeWidth = 2.dp)
                 }
                 IconButton(onClick = { model.screen = "settings" }, modifier = Modifier.size(52.dp)) { GlyphIcon(Glyph.SETTINGS, description = stringResource(R.string.settings)) }
@@ -102,8 +121,9 @@ import java.util.Locale
             Column(Modifier.fillMaxWidth().height(statusHeight).padding(horizontal = 22.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 if (savingCount > 0) Text(stringResource(R.string.saving_short, savingCount), style = MaterialTheme.typography.labelSmall, color = CameraColors.onSurfaceVariant)
                 if (failedCount > 0) Text(stringResource(R.string.local_failed_short, failedCount), style = MaterialTheme.typography.labelSmall, color = CameraColors.error)
-                if (model.sync) Text(stringResource(R.string.upload_counts, deliveries.count { it.state == "RECEIVED" }, deliveries.count { it.state in listOf("PENDING", "SENDING") }), style = MaterialTheme.typography.labelSmall, color = CameraColors.onSurfaceVariant)
-                if (model.sync && deliveries.any { it.state == "FAILED" }) Text(stringResource(R.string.upload_failed), style = MaterialTheme.typography.labelSmall, color = CameraColors.error)
+                val uploads = UploadSummary.forReceiver(deliveries, model.receiver?.id)
+                if (model.sync) Text(stringResource(R.string.upload_counts, uploads.received, uploads.waiting + uploads.sending), style = MaterialTheme.typography.labelSmall, color = CameraColors.onSurfaceVariant)
+                if (model.sync && uploads.failed > 0) Text(stringResource(R.string.upload_failed_count, uploads.failed), style = MaterialTheme.typography.labelSmall, color = CameraColors.error)
             }
         }
     }

@@ -1,5 +1,15 @@
 # Verification and acceptance checklist
 
+## Camera, folder browsing and receiver switching — 2026-10-18
+
+- Capture feedback uses CameraX's actual capture-start callback for a brief shutter blackout, button pulse and system-respecting haptic feedback. It does not resize the camera preview or claim the local save has completed.
+- Paths has a dedicated scrolling list with search and subfolder navigation; the editable destination and Start camera action remain outside that list. The persistent cancel sentence is removed; the header camera action still returns to the confirmed session without applying a draft path.
+- Folders adds current-folder search and a full-screen, fit-to-screen JPEG viewer with close/share/export. Closing restores the list position and search. Directory queries and image decoding run off the main thread; access and decode failures show visible messages.
+- QR and manual pairing use one receiver replacement flow. Changing the address of the same PC still verifies its original certificate/identity; a different PC must be paired. Replacing a PC requires an explicit old-queue discard decision, preserves local photos and the sync setting, and never sends old tasks to the new PC. Renewed same-PC credentials/addresses release failed and deferred tasks.
+- Transfer status is summarized once for the current PC, with delivered/waiting/sending/failed counts and an optional per-photo queue. Previous PCs and discarded tasks do not pollute current status.
+
+Local validation: debug APK, optimized release APK, instrumentation APK, all 16 host tests and lint pass (0 errors; advisory warnings remain). New host regressions cover receiver replacement consent, stale receipt rejection after discard, same-PC credential/address renewal, and per-PC queue summary counts. New native tests exercise long path lists, search and offscreen-photo opening, and receiver replacement confirmation. The local API-34 emulator segfaults before boot with both SwiftShader and GPU/Vulkan disabled; no phone is connected. Native runner results will be recorded after CI completes. New production release/signing/publication is outside this update's validation.
+
 The 0.2.0 UX update adds standard local receiver state, complete searchable Paths, CameraX torch modes/zoom, and a redesigned interface. Its updated checks are recorded in ux-update-results.txt. The automatic receiver startup checks are recorded in automatic-startup-results.txt (16 tests plus actual private-interface HTTPS/CLI tests). The initial-run results below remain historical.
 
 Results recorded 2026-10-04, Africa/Tunis. Only generated development JPEGs were used. No real user photo was transmitted and no public server was deployed.
