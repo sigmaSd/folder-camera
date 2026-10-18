@@ -1,3 +1,16 @@
+# Current release status
+
+Updated 2026-10-18 (Africa/Tunis).
+
+- Android UX fixes merged in [PR #1](https://github.com/sigmaSd/folder-camera/pull/1).
+- Preparing Android 1.0.2/versionCode 6 with the existing production signing identity.
+- Official F-Droid lists 1.0.1. Its recipe enables automatic stable Android tag updates; new versions require the F-Droid build and publication cycle.
+- App logic passes 16 host tests and 11 native tests; optimized capture/restart checks pass on Android 16 with 4-KB and 16-KB page sizes. See [testing evidence](../docs/testing.md).
+- Android 17 emulator testing remains blocked by platform services/credential storage failing to become ready. No Android 17 runtime success is claimed.
+- Google Play publication still requires the owner's verified organization account.
+
+## Historical release preparation
+
 # Store publication status
 
 Updated 2026-10-04 (Africa/Tunis). This is a factual checklist, not a claim that either store listing is live.

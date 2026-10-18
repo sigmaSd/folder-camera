@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2
+
+- Add a shutter animation and haptic feedback when capture starts.
+- Give Paths more room and remove the confusing cancel line.
+- Add folder search and a full-screen photo viewer that preserves your place.
+- Fix switching between paired computers and retrying transfers after address changes.
+- Summarize transfers per computer and keep photo-import choices tied to the selected receiver.
+- Move folder metadata and photo decoding off the UI thread.
+
 ## 1.0.1
 
 - Enable R8 code optimization and resource shrinking for a smaller Android release.

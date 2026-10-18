@@ -1,0 +1,6 @@
+Shutter animation and haptic feedback when taking photos.
+Roomier Paths screen without the confusing cancel line.
+Folder search and a full-screen photo viewer that keeps your place.
+Fixed switching computers and retrying transfers after address changes.
+Clearer per-computer transfer summaries.
+Folder metadata and photo decoding now run off the UI thread.

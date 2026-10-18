@@ -16,4 +16,4 @@ Pair with the free, open-source desktop receiver to send copies directly to your
 Privacy and control
 No advertising, analytics or developer-operated photo server. No broad all-files access. You choose the Android and PC folders independently. The app is GPL-3.0-or-later open-source software; source code and support are available through the project website.
 
-The desktop receiver currently supports Linux and requires Deno and OpenSSL. Optional PC uploads are not required for local capture. Background upload timing is controlled by Android. Recover/export private staging before uninstalling; private app metadata and pairing credentials do not survive uninstall.
+The optional desktop receiver is available for Linux, Windows and macOS, with its runtime and certificate generation included. Optional PC uploads are not required for local capture. Background upload timing is controlled by Android. Recover/export private staging before uninstalling; private app metadata and pairing credentials do not survive uninstall.

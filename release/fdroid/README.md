@@ -1,18 +1,9 @@
-# Official F-Droid submission
+# Official F-Droid distribution
 
-MR: https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190
-Fork branch: sigmaSd/fdroiddata, folder-camera
-Updated submission commit: 9fea7c2e49c6d8aa7467a47d44d003f9e38d3226
-Android: 1.0.1 / versionCode 5
-Pinned source: ba0ed7f4c503f0594e8b5af738d193709cbd23aa
-Reference: https://github.com/sigmasd/folder-camera/releases/download/v1.0.1/folder-camera-1.0.1.apk
+The app is [listed on official F-Droid](https://f-droid.org/en/packages/io.github.sigmasd.foldercamera/). The original [submission MR](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/51190) was merged on 2026-10-08; version 1.0.1/versionCode 5 was published on 2026-10-12.
 
-On 2026-10-06 linsui requested R8 and closed the MR because the official template was not followed. The earlier custom checklist was replaced using GitLab's actual App inclusion template, with its wording preserved. The owner's introduction/disclosure and screenshots remain. R8 code optimization and resource shrinking are enabled. The approximately 2.8-MB universal APK retains the signing identity; only the latest version is in the recipe.
+The official recipe uses `AutoUpdateMode: Version` and `UpdateCheckMode: Tags ^v[0-9.]+$`. A stable Android tag with a higher version code is detected automatically; desktop receiver tags are excluded. The public developer-signed APK must remain at `https://github.com/sigmasd/folder-camera/releases/download/v%v/folder-camera-%v.apk`. F-Droid rebuilds it and verifies the production signing certificate before publication. Detection, a successful build and appearance in the store are separate steps.
 
-Local release build/lint and all thirteen host tests pass. Native Android 16 instrumentation passes, and the actual optimized APK selects a SAF folder, saves a JPEG, and preserves settings/photos across restart on both the 4-KB and 16-KB emulators. Clean official F-Droid/JDK 21 source builds/scans pass. A fresh independent source rebuild with the copied developer signature is byte-identical; full F-Droid download/reference/allowed-signer verification also passes. Signature, production identity, licenses and 16-KB alignment pass. Android 17 emulator testing remains blocked by the documented platform renderer/service failures.
+Android 1.0.2/versionCode 6 contains the camera, browser and receiver pairing fixes. Release verification is recorded in [STATUS.md](../STATUS.md); the recipe snapshot is [io.github.sigmasd.foldercamera.yml](io.github.sigmasd.foldercamera.yml).
 
-The corrected MR has been reopened; all nine jobs pass in pipeline 2916670653: https://gitlab.com/sigmaSd/fdroiddata/-/pipelines/2916670653. The old nine-job passing pipeline 2911353093 validates only the previous 1.0.0 recipe. The corrected R8 recipe now passes all nine checks.
-
-Only metadata/io.github.sigmasd.foldercamera.yml is submitted. Descriptions/changelog/images remain upstream. The unrelated local config.yml change in .work/fdroid/data is preserved and excluded. Do not push the superseded folder-camera-submission branch or its listing sidecars.
-
-Maintainers decide admission. A passing build and a corrected MR do not mean an official listing exists. Preserve the owner's disclosure on future edits. merge-request.md records the current description.
+The original submission description is preserved in `merge-request.md` as history. Do not reopen that merged MR for version updates. Preserve the unrelated local `config.yml` modification in `.work/fdroid/data` and never publish private signing files or phone data.
