@@ -89,7 +89,7 @@ import org.foldercamera.data.Capture
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     LaunchedEffect(model.root, saved.size) { model.refreshFolders() }
     LaunchedEffect(parent, search) { listState.scrollToItem(0) }
-    Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.choose_folder_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         Surface(onClick = selectRoot, shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -101,18 +101,17 @@ import org.foldercamera.data.Capture
                 Text(stringResource(R.string.change), color = Accent, style = MaterialTheme.typography.labelLarge)
             }
         }
-        SearchField(search, { search = it }, stringResource(R.string.search_paths))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (parent.isNotEmpty() && search.isBlank()) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            SearchField(search, { search = it }, stringResource(R.string.search_paths), Modifier.weight(1f))
+            if (model.folderLoading) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+            IconButton(onClick = model::refreshFolders) { GlyphIcon(Glyph.REFRESH, description = stringResource(R.string.refresh_paths), tint = Muted) }
+        }
+        if (parent.isNotEmpty() && search.isBlank()) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { parent = parent.substringBeforeLast('/', "") }) { GlyphIcon(Glyph.BACK, description = stringResource(R.string.up_folder)) }
                 Text(parent, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 TextButton(onClick = { parent = "" }) { Text(stringResource(R.string.all_paths)) }
-            } else {
-                Text(stringResource(R.string.paths), style = MaterialTheme.typography.titleSmall)
-                Text(" · ${known.size}", Modifier.weight(1f), color = Muted, style = MaterialTheme.typography.labelMedium)
             }
-            if (model.folderLoading) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-            IconButton(onClick = model::refreshFolders) { GlyphIcon(Glyph.REFRESH, description = stringResource(R.string.refresh_paths), tint = Muted) }
         }
         if (model.folderError) Text(stringResource(R.string.paths_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         LazyColumn(Modifier.weight(1f).fillMaxWidth().testTag("path-list"), state = listState, contentPadding = PaddingValues(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -139,16 +138,17 @@ import org.foldercamera.data.Capture
             }
         }
         HorizontalDivider(color = Line)
-        OutlinedTextField(model.path, { model.path = it; model.error = null }, label = { Text(stringResource(R.string.relative_path)) }, placeholder = { Text(stringResource(R.string.path_example)) }, singleLine = true, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth(), isError = model.error?.startsWith("path_") == true)
-        Button(onClick = { focus.clearFocus(); model.confirm() }, enabled = model.root != null, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().height(50.dp), contentPadding = PaddingValues(horizontal = 20.dp)) {
-            Text(stringResource(R.string.start_camera), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-            GlyphIcon(Glyph.ARROW)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(model.path, { model.path = it; model.error = null }, label = { Text(stringResource(R.string.relative_path)) }, placeholder = { Text(stringResource(R.string.path_example)) }, singleLine = true, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f), isError = model.error?.startsWith("path_") == true)
+            Button(onClick = { focus.clearFocus(); model.confirm() }, enabled = model.root != null, shape = RoundedCornerShape(14.dp), modifier = Modifier.width(110.dp).heightIn(min = 56.dp), contentPadding = PaddingValues(horizontal = 12.dp)) {
+                Text(stringResource(R.string.start_camera), maxLines = 2)
+            }
         }
         Spacer(Modifier.height(2.dp))
     }
 }
-@Composable fun SearchField(value: String, onValueChange: (String) -> Unit, label: String) {
-    OutlinedTextField(value, onValueChange, singleLine = true, label = { Text(label) }, leadingIcon = { GlyphIcon(Glyph.SEARCH, tint = Muted) }, trailingIcon = { if (value.isNotEmpty()) IconButton(onClick = { onValueChange("") }) { GlyphIcon(Glyph.CLOSE, description = stringResource(R.string.clear_search)) } }, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth())
+@Composable fun SearchField(value: String, onValueChange: (String) -> Unit, label: String, modifier: Modifier = Modifier) {
+    OutlinedTextField(value, onValueChange, singleLine = true, label = { Text(label) }, leadingIcon = { GlyphIcon(Glyph.SEARCH, tint = Muted) }, trailingIcon = { if (value.isNotEmpty()) IconButton(onClick = { onValueChange("") }) { GlyphIcon(Glyph.CLOSE, description = stringResource(R.string.clear_search)) } }, shape = RoundedCornerShape(14.dp), modifier = modifier.fillMaxWidth())
 }
 fun treeLabel(tree: String): String = runCatching { android.provider.DocumentsContract.getTreeDocumentId(Uri.parse(tree)).substringAfterLast('/').substringAfter(':') }.getOrDefault(tree)
 @Composable fun errorText(code: String): String = stringResource(when (code) {
