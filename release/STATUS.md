@@ -2,6 +2,18 @@
 
 Updated 2026-10-18 (Africa/Tunis).
 
+- [Android 1.0.3/versionCode 7 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.3) as a stable release. Settings → PC sync now links directly to the Windows, macOS and Linux receiver downloads and explains installation/pairing.
+- Source/tag: `4c981879c01c4b8e553e657a1ef2f9316f47603c`. Production app ID and signing certificate are retained.
+- Public APK: 2,750,646 bytes; SHA-256 `ec45f18de5e7fb7c395b01933d7e0e710d3963690e5e8d9c43a68dfd7bdb5aa6`. The public download matches the signed local artifact.
+- All 16 host tests and lint pass. [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/39141242116) passes on the release source. Clean official F-Droid/JDK 21 source/APK scans pass; a second clean build reproduces the signed APK byte for byte. F-Droid's reference verifier accepts the public APK against that independent build and confirms its allowed signer. Production signature/manifest/legal assets and 16-KB ZIP/ELF alignment pass.
+- The F-Droid update checker detects 1.0.3/code 7 and generates its pinned build automatically; metadata parsing/lint pass. Official F-Droid build/index publication is pending. A newer release can supersede a pending older version; watch for 1.0.3 or later rather than requiring 1.0.2 specifically.
+- New native acceptance is still running in [the release matrix](https://github.com/sigmaSd/folder-camera/actions/runs/39141242121); prior Android 16 4-KB/16-KB coverage is recorded below. Android 17 emulator readiness remains a known limitation. No new Android 17 runtime success is claimed.
+- APK published; upload-key AAB prepared locally for the future verified Play organization account. No Play upload was performed.
+
+## Android 1.0.2 release history
+
+Updated 2026-10-18 (Africa/Tunis).
+
 - Android UX fixes merged in [PR #1](https://github.com/sigmaSd/folder-camera/pull/1).
 - [Android 1.0.2/versionCode 6 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.2) as a stable release, using the existing production app ID and signing certificate. Source/tag: `2467113340075c6abb84b6c107b0e62387364b63`.
 - Public APK: 2,746,550 bytes; SHA-256 `c5ce8c83207d809adcbcc40715c096634935e6f5a60bbcae246fe5781fcb0bf8`. The downloaded release matches the signed local artifact.

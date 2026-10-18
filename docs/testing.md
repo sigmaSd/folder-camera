@@ -1,5 +1,11 @@
 # Verification and acceptance checklist
 
+## Desktop receiver download link — Android 1.0.3, 2026-10-18
+
+Settings → PC sync has a persistent Get desktop receiver button and brief installation/pairing instructions, visible before pairing. The link opens `https://sigmasd.github.io/folder-camera/#desktop-downloads`; the live website's destination anchor was verified.
+
+Release source `4c981879c01c4b8e553e657a1ef2f9316f47603c` passes all 16 host tests, lint and [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/39141242116). The pinned official F-Droid image/JDK 21/Gradle 9.4.0 environment builds versionCode 7 with clean source and APK scans. A second clean build plus the developer signature reproduces identical signed bytes. The downloaded public APK also passes F-Droid's source/reference comparison and allowed-signer verification. Production manifest, legal assets, signature and 16-KB ZIP/ELF alignment checks pass. The F-Droid update checker detects 1.0.3 and generates its pinned code-7 build; metadata parsing and lint pass. [Native acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/39141242121) is still running; earlier Android 16 results and the Android 17 emulator limitation are documented below.
+
 ## Camera, folder browsing and receiver switching — 2026-10-18
 
 - Capture feedback uses CameraX's actual capture-start callback for a brief shutter blackout, button pulse and system-respecting haptic feedback. It does not resize the camera preview or claim the local save has completed.

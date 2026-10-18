@@ -1,6 +1,6 @@
 # Releases
 
-Target identity: Folder Camera, publisher sigmasd, application ID `io.github.sigmasd.foldercamera`. Android 1.0.2/versionCode 6 contains the camera, folder browser and PC pairing fixes, with R8 and resource shrinking enabled. The app is available on [official F-Droid](https://f-droid.org/en/packages/io.github.sigmasd.foldercamera/); new releases wait for its update checks, reproducible builds and index publication. Debug uses `.debug` and keeps the existing prototype app separate.
+Target identity: Folder Camera, publisher sigmasd, application ID `io.github.sigmasd.foldercamera`. Android 1.0.3/versionCode 7 adds a desktop receiver download link in Settings → PC sync and includes the camera, folder browser and PC pairing fixes, with R8 and resource shrinking enabled. The app is available on [official F-Droid](https://f-droid.org/en/packages/io.github.sigmasd.foldercamera/); new releases wait for its update checks, reproducible builds and index publication. Debug uses `.debug` and keeps the existing prototype app separate.
 
 Distribution: same GPL-3.0-or-later app, free on official F-Droid and one-time paid download on Play. No in-app billing SDK, proprietary license checks or runtime Play dependency. Price/company contacts remain owner decisions.
 
