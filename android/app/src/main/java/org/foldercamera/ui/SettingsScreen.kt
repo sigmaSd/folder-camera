@@ -1,7 +1,9 @@
 package org.foldercamera.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -76,6 +78,12 @@ import org.json.JSONObject
         }
         SectionCard(stringResource(R.string.sync_heading), Glyph.REFRESH) {
         Text(stringResource(R.string.sync_short_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        OutlinedButton(onClick = {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://sigmasd.github.io/folder-camera/#desktop-downloads")))
+        }, modifier = Modifier.fillMaxWidth(), shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)) {
+            Text(stringResource(R.string.get_desktop_receiver))
+        }
+        Text(stringResource(R.string.desktop_receiver_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Switch(checked = model.sync, enabled = model.receiver != null, onCheckedChange = { value -> if (!value) model.toggleSync(false) else if (hasLan()) showEnable = true else lan.launch("android.permission.ACCESS_LOCAL_NETWORK") })
             Text(stringResource(R.string.pc_sync))

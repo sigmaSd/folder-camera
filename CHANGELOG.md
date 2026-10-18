@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Add a desktop receiver download button in Settings → PC sync, linking directly to Windows, macOS and Linux installers.
+- Explain how to install the receiver and pair it with the phone.
+
 ## 1.0.2
 
 - Add a shutter animation and haptic feedback when capture starts.

@@ -121,6 +121,8 @@
     <string name="storage_short_help">New photos use this base folder. Earlier photos stay where they were saved.</string>
     <string name="pair_short_help">Scan the one-time QR displayed by your PC receiver.</string>
     <string name="sync_short_help">Send a copy to your paired PC. Originals stay on your phone.</string>
+    <string name="get_desktop_receiver">Get desktop receiver</string>
+    <string name="desktop_receiver_help">Free for Windows, macOS and Linux. Install it on your computer, then scan its pairing code.</string>
     <string name="about">About Folder Camera</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="open_source_license">GPL-3.0-or-later license</string>
