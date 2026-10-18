@@ -35,9 +35,9 @@ import org.json.JSONObject
             } catch (_: Exception) { R.string.export_failed }
         }
     }
-    var showEnable by remember { mutableStateOf(false) }
-    var selectedPaths by remember { mutableStateOf(setOf<String>()) }
-    var includeExisting by remember { mutableStateOf(false) }
+    var showEnable by remember(model.receiver?.id) { mutableStateOf(false) }
+    var selectedPaths by remember(model.receiver?.id) { mutableStateOf(setOf<String>()) }
+    var includeExisting by remember(model.receiver?.id) { mutableStateOf(false) }
     var pairingJson by remember { mutableStateOf("") }
     var address by remember(model.receiver) { mutableStateOf(model.receiver?.endpoint ?: "") }
     var fingerprint by remember { mutableStateOf("") }

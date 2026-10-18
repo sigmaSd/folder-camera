@@ -76,11 +76,13 @@ class CameraModel(application: Application) : AndroidViewModel(application) {
         }
         app.delivery.kick()
     }
-    fun importFolders(paths: Set<String>) { app.scope.launch {
-        val r = receiver ?: return@launch
-        app.db.dao().saved().filter { it.relativePath in paths }.forEach { app.db.dao().enqueue(Delivery(it.photoId, r.id)) }
-        app.delivery.kick()
-    } }
+    fun importFolders(paths: Set<String>) {
+        val selectedReceiver = receiver ?: return
+        app.scope.launch {
+            app.db.dao().saved().filter { it.relativePath in paths }.forEach { app.db.dao().enqueue(Delivery(it.photoId, selectedReceiver.id)) }
+            app.delivery.kick()
+        }
+    }
     fun capture(take: (java.io.File, (Boolean) -> Unit) -> Unit) {
         val session = gate.session ?: return
         if (busy) return
