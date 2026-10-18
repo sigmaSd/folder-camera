@@ -3,9 +3,11 @@
 Updated 2026-10-18 (Africa/Tunis).
 
 - Android UX fixes merged in [PR #1](https://github.com/sigmaSd/folder-camera/pull/1).
-- Preparing Android 1.0.2/versionCode 6 with the existing production signing identity.
-- Official F-Droid lists 1.0.1. Its recipe enables automatic stable Android tag updates; new versions require the F-Droid build and publication cycle.
-- App logic passes 16 host tests and 11 native tests; optimized capture/restart checks pass on Android 16 with 4-KB and 16-KB page sizes. See [testing evidence](../docs/testing.md).
+- [Android 1.0.2/versionCode 6 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.2) as a stable release, using the existing production app ID and signing certificate. Source/tag: `2467113340075c6abb84b6c107b0e62387364b63`.
+- Public APK: 2,746,550 bytes; SHA-256 `c5ce8c83207d809adcbcc40715c096634935e6f5a60bbcae246fe5781fcb0bf8`. The downloaded release matches the signed local artifact.
+- Clean official F-Droid/JDK 21 source and APK scans pass. A second clean build reproduces the signed APK byte for byte. The full F-Droid build also downloads the public 1.0.2 APK, successfully compares it against the source rebuild and verifies the allowed signer. Signature, production identity, bundled legal assets and 16-KB ZIP/ELF alignment pass.
+- Official F-Droid lists 1.0.1. Running its update checker against the official recipe detects 1.0.2/code 6 and generates the new build automatically. Official build/index publication is pending; no duplicate update MR was filed.
+- [Build and test CI](https://github.com/sigmaSd/folder-camera/actions/runs/39121155018) passes on the exact release source. All 16 host tests and lint pass (0 errors, 47 advisory warnings). [Native acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/39121154712) passes 11 tests and optimized capture/restart checks on both Android 16 4-KB and 16-KB emulators. See [testing evidence](../docs/testing.md).
 - Android 17 emulator testing remains blocked by platform services/credential storage failing to become ready. No Android 17 runtime success is claimed.
 - Google Play publication still requires the owner's verified organization account.
 

@@ -1,4 +1,4 @@
-# Release preparation
+# Releases
 
 Target identity: Folder Camera, publisher sigmasd, application ID `io.github.sigmasd.foldercamera`. Android 1.0.2/versionCode 6 contains the camera, folder browser and PC pairing fixes, with R8 and resource shrinking enabled. The app is available on [official F-Droid](https://f-droid.org/en/packages/io.github.sigmasd.foldercamera/); new releases wait for its update checks, reproducible builds and index publication. Debug uses `.debug` and keeps the existing prototype app separate.
 
@@ -10,7 +10,7 @@ Private app/upload PKCS12 files and credentials are outside this repository at `
 
 `scripts/create_signing_keys.py` creates keys once and refuses accidental replacement. `scripts/build_release.py` signs APK with the app key and AAB with the separate upload key. Use the app key for Play App Signing import (via Google's PEPK tool and Console-provided encryption key); do not let Google generate a different app-signing identity if cross-store upgrades are required. No private key has been uploaded to Google.
 
-`scripts/verify_release.py APK --sdk SDK_PATH` checks signature, production manifest, legal assets, 16-KB ZIP and 64-bit native ELF alignment. Official F-Droid build/scan/reference verification has passed for v1.0.0. `scripts/verify_reproducibility.py` separately confirms that copying the developer signature onto the independently built unsigned APK yields byte-identical signed bytes. Compatible upgrades from a Google-served installation remain unclaimed until tested.
+`scripts/verify_release.py APK --sdk SDK_PATH` checks signature, production manifest, legal assets, 16-KB ZIP and 64-bit native ELF alignment. Release-specific validation and checksums are recorded in [STATUS.md](STATUS.md) and [artifact-checksums.json](artifact-checksums.json). `scripts/verify_reproducibility.py` separately confirms that copying the developer signature onto the independently built unsigned APK yields byte-identical signed bytes. Compatible upgrades from a Google-served installation remain unclaimed until tested.
 
 Use `scripts/build_release.py --unsigned-apk CANONICAL_APK` to sign the verified F-Droid/JDK-21 build. APK signing uses SDK apksigner with alignment preserved; re-signing through Gradle changes the ZIP and breaks reproduction. Signed releases are published at https://github.com/sigmasd/folder-camera/releases; checksums are in artifact-checksums.json.
 
