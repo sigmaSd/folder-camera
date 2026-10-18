@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -114,7 +115,7 @@ import org.foldercamera.data.Capture
             IconButton(onClick = model::refreshFolders) { GlyphIcon(Glyph.REFRESH, description = stringResource(R.string.refresh_paths), tint = Muted) }
         }
         if (model.folderError) Text(stringResource(R.string.paths_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState, contentPadding = PaddingValues(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().testTag("path-list"), state = listState, contentPadding = PaddingValues(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (visible.isEmpty()) item {
                 Column(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     GlyphIcon(Glyph.FOLDER, Modifier.size(32.dp), tint = Muted)

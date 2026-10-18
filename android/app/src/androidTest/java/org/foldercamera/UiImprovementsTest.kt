@@ -33,8 +33,9 @@ class UiImprovementsTest {
         rule.waitUntil(10_000) { rule.onAllNodesWithText("Project 01").fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Project 01").assertIsDisplayed()
         rule.onNodeWithText("Start camera").assertIsDisplayed()
-        rule.onNodeWithText("Project 70").performScrollTo().performClick()
-        rule.onNodeWithText("Project 70").assertIsDisplayed()
+        rule.onNodeWithTag("path-list").performScrollToNode(hasText("Project 70"))
+        rule.onNodeWithText("Project 70").performClick()
+        rule.onAllNodesWithText("Project 70").onFirst().assertIsDisplayed()
         rule.onNodeWithText("Relative folder path").assertTextContains("Project 70")
         rule.onNodeWithText("Start camera").assertIsDisplayed()
         rule.onNodeWithText("Cancel — keep current destination").assertDoesNotExist()
@@ -55,7 +56,8 @@ class UiImprovementsTest {
         rule.onNodeWithContentDescription("Close photo").assertIsDisplayed().performClick()
         rule.onNodeWithText("Search this folder").assertTextContains("Photo 24")
         rule.onNodeWithContentDescription("Clear search").performClick()
-        rule.onNodeWithText("Photo 30.jpg").performScrollTo().performClick()
+        rule.onNodeWithTag("browser-list").performScrollToNode(hasText("Photo 30.jpg"))
+        rule.onNodeWithText("Photo 30.jpg").performClick()
         rule.onNodeWithContentDescription("Close photo").assertIsDisplayed()
         rule.waitUntil(10_000) { rule.onAllNodesWithContentDescription("Photo preview").fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithContentDescription("Photo preview").assertIsDisplayed()

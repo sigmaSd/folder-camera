@@ -18,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,7 +85,7 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
             IconButton(onClick = { refresh++ }) { GlyphIcon(Glyph.REFRESH, description = stringResource(R.string.refresh_files)) }
         }
         if (failed) Text(stringResource(R.string.export_failed), color = MaterialTheme.colorScheme.error)
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState, contentPadding = PaddingValues(bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().testTag("browser-list"), state = listState, contentPadding = PaddingValues(bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (entries == null) item { CircularProgressIndicator(Modifier.padding(20.dp)) }
             else if (readFailed) item { Text(stringResource(R.string.browser_unavailable), color = MaterialTheme.colorScheme.error) }
             else if (visible.isEmpty()) item { Text(stringResource(if (search.isNotBlank()) R.string.no_matching_files else R.string.browser_empty), color = Muted) }
