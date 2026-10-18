@@ -9,6 +9,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--api', required=True)
 parser.add_argument('--target', required=True)
 args = parser.parse_args()
+# The 16-KB Google API images exhaust a 3-GB guest during first-boot services
+# and can kill foreground instrumentation before any app assertion runs.
+guest_memory = 6144 if '16k' in args.target else 3072
 root = Path(__file__).resolve().parents[1]
 work = root/'.work/emulator'
 work.mkdir(parents=True, exist_ok=True)
@@ -26,10 +29,10 @@ avd_path = avd_home/'folder-camera-tests.avd'
 subprocess.run([str(avdmanager), 'create', 'avd', '--force', '--name', 'folder-camera-tests', '--package', image, '--device', 'pixel_7', '--path', str(avd_path)], input='no\n', text=True, check=True, env=environment)
 avd = avd_path/'config.ini'
 with avd.open('a') as out:
-    out.write('\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize=3072\nhw.camera.back=emulated\ndisk.dataPartition.size=8G\n')
+    out.write(f'\nhw.lcd.width=720\nhw.lcd.height=1640\nhw.lcd.density=320\nhw.ramSize={guest_memory}\nhw.camera.back=emulated\ndisk.dataPartition.size=8G\n')
 subprocess.run([str(adb), 'start-server'], check=True)
 log = (work/'emulator.log').open('w')
-process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', '3072', '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
+process = subprocess.Popen([str(sdk/'emulator/emulator'), '-avd', 'folder-camera-tests', '-no-window', '-gpu', 'swiftshader_indirect', '-no-snapshot', '-wipe-data', '-noaudio', '-no-boot-anim', '-camera-back', 'emulated', '-memory', str(guest_memory), '-cores', '2'], stdout=log, stderr=subprocess.STDOUT, env=environment)
 def shell(*arguments):
     return subprocess.run([str(adb), '-s', 'emulator-5554', 'shell', *arguments], capture_output=True, text=True)
 try:
