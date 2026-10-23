@@ -157,6 +157,8 @@ fun treeLabel(tree: String): String = runCatching { android.provider.DocumentsCo
     "path_character" -> R.string.path_character; "path_trailing" -> R.string.path_trailing; "path_reserved" -> R.string.path_reserved
     "storage_permission" -> R.string.storage_permission; "storage_conflict", "storage_renamed" -> R.string.storage_conflict
     "capture_interrupted", "capture_failed", "staging_missing", "staging_corrupt" -> R.string.capture_failed
-    "lan_permission" -> R.string.lan_permission; "camera_unavailable" -> R.string.camera_unavailable; "pair_failed" -> R.string.pair_failed; "pair_invalid" -> R.string.pair_invalid; "address_failed" -> R.string.address_failed
+    "lan_permission" -> R.string.lan_permission; "camera_unavailable" -> R.string.camera_unavailable; "pair_failed" -> R.string.pair_failed; "pair_invalid" -> R.string.pair_invalid
+    "pair_expired" -> R.string.pair_expired; "pair_clock" -> R.string.pair_clock; "pair_unreachable" -> R.string.pair_unreachable
+    "pair_wrong_pc" -> R.string.pair_wrong_pc; "pair_used" -> R.string.pair_used; "pair_rate_limited" -> R.string.pair_rate_limited; "address_failed" -> R.string.address_failed
     else -> R.string.storage_unavailable
 })

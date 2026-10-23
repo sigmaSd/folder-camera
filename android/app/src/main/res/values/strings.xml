@@ -77,8 +77,14 @@
     <string name="capture_failed">Capture was interrupted or staging is missing/incomplete. Any recoverable data is retained; take a new photo if necessary.</string>
     <string name="camera_unavailable">Camera could not start. Check camera access and try reopening the camera.</string>
     <string name="storage_unavailable">Local save failed. Check free space, folder access and provider availability, then retry. Staging is retained.</string>
-    <string name="pair_failed">Pairing or verification failed. Check LAN permission, address, certificate fingerprint, receiver identity and secret expiry.</string>
-    <string name="pair_invalid">Invalid or expired pairing payload. Request a new one-time QR from the PC.</string>
+    <string name="pair_failed">Pairing failed. Show a new pairing code on the PC and try again.</string>
+    <string name="pair_invalid">This is not a valid pairing code. Scan the QR shown by the PC receiver.</string>
+    <string name="pair_expired">This pairing code has expired. Show a new one on the PC.</string>
+    <string name="pair_clock">This pairing code has expired, or this phone’s clock is wrong. Check the phone’s date and time, then show a new code on the PC.</string>
+    <string name="pair_unreachable">Can’t reach the PC at this address. Make sure the phone and PC are on the same network, and that a VPN isn’t blocking it.</string>
+    <string name="pair_wrong_pc">This isn’t the PC that showed the code: its certificate doesn’t match. Scan the code shown by the PC you want to pair.</string>
+    <string name="pair_used">The PC no longer accepts this code: it was already used, replaced or has expired. Scan the newest code on the PC.</string>
+    <string name="pair_rate_limited">Too many pairing attempts. Wait a minute, then try again.</string>
     <string name="lan_permission">Grant local network access before pairing or enabling sync.</string>
     <string name="auth_failed">PC credential revoked or invalid. Pair again to resume.</string>
     <string name="upload_conflict">PC ID or destination conflict. Resolve the occupied destination before retrying.</string>

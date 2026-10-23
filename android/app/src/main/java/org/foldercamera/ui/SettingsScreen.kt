@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -59,7 +60,7 @@ import org.json.JSONObject
                 val paired = withContext(Dispatchers.IO) { PinnedTransport(context).pair(Pairing.parse(text)) }
                 verified = false
                 model.connectReceiver(paired)
-            } catch (_: Exception) { model.error = "pair_failed" }
+            } catch (e: Exception) { model.error = pairingFailed(e) }
             finally { operation = false }
         }
     }
@@ -133,7 +134,7 @@ import org.json.JSONObject
         }
     }, confirmButton = { TextButton(onClick = { if (includeExisting) model.importFolders(selectedPaths); model.toggleSync(true); showEnable = false }) { Text(stringResource(R.string.enable)) } }, dismissButton = { TextButton(onClick = { showEnable = false }) { Text(stringResource(R.string.cancel)) } })
     model.receiverToReplace?.let { r -> AlertDialog(onDismissRequest = { if (!operation) model.receiverToReplace = null }, title = { Text(stringResource(R.string.replace_receiver)) }, text = { Text(stringResource(R.string.replace_help)) }, confirmButton = {
-        TextButton(enabled = !operation, onClick = { operation = true; scope.launch { try { model.connectReceiver(r, replace = true); verified = false } catch (_: Exception) { model.error = "pair_failed" } finally { operation = false } } }) { Text(stringResource(R.string.discard_replace)) }
+        TextButton(enabled = !operation, onClick = { operation = true; scope.launch { try { model.connectReceiver(r, replace = true); verified = false } catch (e: Exception) { model.error = pairingFailed(e) } finally { operation = false } } }) { Text(stringResource(R.string.discard_replace)) }
     }, dismissButton = { TextButton(enabled = !operation, onClick = { model.receiverToReplace = null }) { Text(stringResource(R.string.keep_receiver)) } }) }
 }
 @Composable fun QrScreen(model: CameraModel) {
@@ -148,8 +149,9 @@ import org.json.JSONObject
     if (!cameraPermission) Button(onClick = { request.launch(Manifest.permission.CAMERA) }) { Text(stringResource(R.string.allow_camera)) }
     else if (scanned == null) CameraPreview(Modifier.fillMaxWidth().height(320.dp), onReady = { }, onFailure = { model.error = "camera_unavailable" }, onQr = { scanned = it })
     scanned?.let { payload ->
-        val p = runCatching { Pairing.parse(payload) }.getOrNull()
-        if (p == null) { Text(stringResource(R.string.pair_invalid)); TextButton(onClick = { scanned = null }) { Text(stringResource(R.string.scan_again)) } }
+        val parsed = remember(payload) { runCatching { Pairing.parse(payload) }.onFailure { Log.w("FolderCamera", "Scanned pairing code rejected", it) } }
+        val p = parsed.getOrNull()
+        if (p == null) { Text(errorText(pairingError(parsed.exceptionOrNull()!!))); TextButton(onClick = { scanned = null }) { Text(stringResource(R.string.scan_again)) } }
         else {
             Text(p.endpoint); Text(p.fingerprint)
             if (Build.VERSION.SDK_INT >= 37) Button(onClick = { lan.launch("android.permission.ACCESS_LOCAL_NETWORK") }) { Text(stringResource(R.string.allow_lan)) }
@@ -157,16 +159,19 @@ import org.json.JSONObject
             Button(enabled = !busy, onClick = {
                 busy = true; scope.launch {
                     try {
-                        require(model.app.delivery.allowed() || Build.VERSION.SDK_INT < 37 || ContextCompat.checkSelfPermission(context, "android.permission.ACCESS_LOCAL_NETWORK") == PackageManager.PERMISSION_GRANTED)
-                        val r = withContext(Dispatchers.IO) { PinnedTransport(context).pair(p) }
+                        if (!(model.app.delivery.allowed() || Build.VERSION.SDK_INT < 37 || ContextCompat.checkSelfPermission(context, "android.permission.ACCESS_LOCAL_NETWORK") == PackageManager.PERMISSION_GRANTED)) throw ProtocolFailure("lan_permission", true)
+                        // Parse again so a code that expired while on screen is reported as expired, not as rejected by the PC.
+                        val r = withContext(Dispatchers.IO) { PinnedTransport(context).pair(Pairing.parse(payload)) }
                         model.connectReceiver(r)
-                    } catch (_: Exception) { model.error = "pair_failed" }; busy = false
+                    } catch (e: Exception) { model.error = pairingFailed(e) }; busy = false
                 }
             }) { Text(stringResource(R.string.pair)) }
             TextButton(onClick = { scanned = null }, enabled = !busy) { Text(stringResource(R.string.scan_again)) }
         }
     }
 }
+/** Logs the real exception for `adb logcat` and returns the code of the step that failed. */
+fun pairingFailed(error: Exception): String { Log.w("FolderCamera", "Pairing failed", error); return pairingError(error) }
 @Composable fun uploadError(code: String): String = stringResource(when (code) {
     "unauthenticated" -> R.string.auth_failed; "conflict" -> R.string.upload_conflict; "insufficient_storage" -> R.string.pc_storage_full
     "certificate_changed", "receipt_mismatch" -> R.string.trust_failed; "local_missing", "local_changed", "local_permission" -> R.string.upload_local_missing
