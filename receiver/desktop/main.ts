@@ -4,6 +4,7 @@ import { Receiver } from "../src/receiver.ts";
 import { stateDirectory } from "../src/state-directory.ts";
 import { durableJson, readJson } from "../src/files.ts";
 import * as system from "./system.ts";
+import { controlHandler } from "./control.ts";
 interface NativeWindow extends EventTarget {
   bind(name: string, handler: (...args: unknown[]) => unknown): void;
   show(): void;
@@ -53,18 +54,27 @@ const uiServer = Deno.serve({ onListen() {} }, async (request) => {
     },
   );
 });
-const window = new native.BrowserWindow({
+// Headless runs the receiver with no window and no tray; other apps use the loopback control API.
+const headless = Deno.args.includes("--headless");
+const window = headless ? undefined : new native.BrowserWindow({
   title: "Folder Camera Receiver",
   width: 1100,
   height: 840,
 });
+function bind(name: string, handler: (...args: unknown[]) => unknown) {
+  window?.bind(name, handler);
+}
+function showWindow() {
+  window?.show();
+  window?.focus();
+}
 const values = new Map<string, string>();
 for (let i = 0; i < Deno.args.length; i++) {
   if (
     ["--state", "--root", "--bind", "--port"].includes(Deno.args[i]) &&
     Deno.args[i + 1]
   ) values.set(Deno.args[i], Deno.args[++i]);
-  else if (!["--background", "--smoke"].includes(Deno.args[i])) {
+  else if (!["--background", "--headless", "--smoke"].includes(Deno.args[i])) {
     throw new Error("Invalid desktop argument");
   }
 }
@@ -167,17 +177,25 @@ async function boot() {
       ).join("");
       activation = Deno.serve(
         { hostname: "127.0.0.1", port: 0, onListen() {} },
-        (request) => {
-          if (
-            request.method !== "POST" ||
-            new URL(request.url).pathname !== "/activate" ||
-            request.headers.has("Origin") ||
-            request.headers.get("Authorization") !== "Bearer " + activationToken
-          ) return new Response("Forbidden", { status: 403 });
-          window.show();
-          window.focus();
-          return new Response(null, { status: 204 });
-        },
+        controlHandler(activationToken, {
+          activate: showWindow,
+          pair: async () =>
+            initialized ? (await receiver.pair()).pairing : null,
+          status() {
+            const current = snapshot();
+            return {
+              version: 1,
+              status: current.status,
+              error: current.error ?? null,
+              address: current.endpoint,
+              root: current.root,
+              devices: current.devices.length,
+              pairing: current.pairing
+                ? { expiresAt: current.pairing.expiresAt }
+                : null,
+            };
+          },
+        }),
       );
       await durableJson(join(state, "desktop-instance.json"), {
         port: (activation.addr as Deno.NetAddr).port,
@@ -193,28 +211,28 @@ async function boot() {
     }
   }
 }
-window.bind("snapshot", snapshot);
-window.bind("start", async () => {
+bind("snapshot", snapshot);
+bind("start", async () => {
   if (!initialized) throw new Error(startupError ?? "Receiver is starting");
   await receiver.start();
   return snapshot();
 });
-window.bind("stop", async () => {
+bind("stop", async () => {
   await receiver.stop();
   return snapshot();
 });
-window.bind("pair", async () => {
+bind("pair", async () => {
   await receiver.pair();
   return snapshot();
 });
-window.bind("revoke", async (id) => {
+bind("revoke", async (id) => {
   if (typeof id !== "string" || !/^[0-9a-f-]{36}$/.test(id)) {
     throw new Error("Invalid phone");
   }
   await receiver.revoke(id);
   return snapshot();
 });
-window.bind("browseFolders", (path) => {
+bind("browseFolders", (path) => {
   if (path !== undefined && typeof path !== "string") {
     throw new Error("Invalid folder");
   }
@@ -235,25 +253,25 @@ async function setRoot(root: unknown) {
   } else await receiver.setRoot(root);
   return snapshot();
 }
-window.bind("setRoot", setRoot);
-window.bind("chooseFolder", async () => {
+bind("setRoot", setRoot);
+bind("chooseFolder", async () => {
   const choice = await system.chooseFolder(
     initialized ? receiver.settings.root : homedir(),
   );
   if (choice.path) return await setRoot(choice.path);
   return choice.fallback ? { fallback: true } : null;
 });
-window.bind("openFolder", async () => {
+bind("openFolder", async () => {
   if (!initialized) throw new Error("Choose a folder first");
   await system.openFolder(receiver.settings.root);
 });
-window.bind("setAutostart", async (enabled) => {
+bind("setAutostart", async (enabled) => {
   if (typeof enabled !== "boolean") throw new Error("Invalid startup setting");
   await system.setAutostart(enabled);
   login = await system.autostartEnabled();
   return snapshot();
 });
-window.bind("setCloseToTray", async (enabled) => {
+bind("setCloseToTray", async (enabled) => {
   if (typeof enabled !== "boolean" || !tray || !initialized) {
     throw new Error("Tray is unavailable");
   }
@@ -277,44 +295,50 @@ async function quit(code = 0) {
     clearInterval(networkRefresh);
     await uiServer.shutdown().catch(() => {});
     tray?.destroy();
-    window.close();
+    window?.close();
     if (Deno.build.os === "darwin") Deno.exitCode = code;
     else Deno.exit(code);
   }
 }
-window.bind("quit", () => quit());
-try {
-  tray = new native.Tray();
-  tray.setIcon(await Deno.readFile(new URL("icon.png", assets)));
-  tray.setTooltip("Folder Camera Receiver");
-  tray.setMenu([
-    { item: { label: "Open receiver", id: "open", enabled: true } },
-    { item: { label: "Quit receiver", id: "quit", enabled: true } },
-  ]);
-  tray.addEventListener("menuclick", (event) => {
-    const id = (event as CustomEvent<{ id: string }>).detail.id;
-    if (id === "open") {
-      window.show();
-      window.focus();
-    }
-    if (id === "quit") void quit();
-  });
-  tray.addEventListener("click", () => {
-    window.show();
-    window.focus();
-  });
-} catch {
-  tray?.destroy();
-  tray = undefined;
+bind("quit", () => quit());
+if (!headless) {
+  try {
+    tray = new native.Tray();
+    tray.setIcon(await Deno.readFile(new URL("icon.png", assets)));
+    tray.setTooltip("Folder Camera Receiver");
+    tray.setMenu([
+      { item: { label: "Open receiver", id: "open", enabled: true } },
+      { item: { label: "Quit receiver", id: "quit", enabled: true } },
+    ]);
+    tray.addEventListener("menuclick", (event) => {
+      const id = (event as CustomEvent<{ id: string }>).detail.id;
+      if (id === "open") showWindow();
+      if (id === "quit") void quit();
+    });
+    tray.addEventListener("click", showWindow);
+  } catch {
+    tray?.destroy();
+    tray = undefined;
+  }
 }
-window.addEventListener("close", (event) => {
+window?.addEventListener("close", (event) => {
   if (quitting) return;
   event.preventDefault();
-  if (preferences.closeToTray && tray && !quitting) window.hide();
+  if (preferences.closeToTray && tray && !quitting) window?.hide();
   else void quit();
 });
-if (Deno.args.includes("--background") && tray) window.hide();
+if (Deno.args.includes("--background") && tray) window?.hide();
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  try {
+    Deno.addSignalListener(signal, () => void quit());
+  } catch { /* Windows only delivers SIGINT. */ }
+}
 await boot();
+if (!quitting && headless && !initialized) {
+  // Nobody can see or fix a startup error without a window.
+  console.error(startupError ?? "Receiver could not start");
+  await quit(1);
+}
 if (!quitting) {
   networkRefresh = setInterval(() => {
     if (initialized) void receiver.refreshNetwork();
@@ -326,8 +350,8 @@ if (!quitting && Deno.args.includes("--smoke")) {
       startupError ?? receiver.snapshot().error ?? "Desktop receiver not ready",
     );
   }
-  let rendered = false;
-  for (let attempt = 0; attempt < 40; attempt++) {
+  let rendered = headless;
+  for (let attempt = 0; window && attempt < 40; attempt++) {
     try {
       const value = await window.executeJs(
         "document.getElementById('status-title')?.textContent",
@@ -348,7 +372,9 @@ if (!quitting && Deno.args.includes("--smoke")) {
     await quit(1);
   }
   console.log(
-    "DESKTOP SMOKE PASS: native window, bindings, independent TLS listener and persistent receiver initialized; target=" +
+    (headless
+      ? "DESKTOP SMOKE PASS: headless control API, independent TLS listener and persistent receiver initialized; target="
+      : "DESKTOP SMOKE PASS: native window, bindings, independent TLS listener and persistent receiver initialized; target=") +
       Deno.build.target,
   );
   setTimeout(() => void quit(), 1500);

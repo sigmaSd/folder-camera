@@ -51,7 +51,7 @@ Portable names are preserved exactly. Limits and rejected names are specified in
 
 ## Optional receiver
 
-The desktop app provides QR pairing, folder selection, phone management, recent arrivals, tray controls and optional launch at login. Downloadable desktop packages include the runtime and internal certificate generation; users do not install Deno or OpenSSL. See [desktop release documentation](docs/desktop-receiver.md) for platform validation and signing status.
+The desktop app provides QR pairing, folder selection, phone management, recent arrivals, tray controls and optional launch at login. Downloadable desktop packages include the runtime and internal certificate generation; users do not install Deno or OpenSSL. See [desktop release documentation](docs/desktop-receiver.md) for platform validation and signing status. Started with `--headless`, it runs with no window or tray, and other apps on the same PC can read its status and request pairing codes through a [local control API](docs/desktop-receiver.md#local-control-api).
 
 For CLI/source development, install Deno **2.9.7**. Dependencies are open source and pinned in `receiver/deno.lock`; bundled license notices are under `third_party/receiver`.
 
@@ -75,7 +75,7 @@ No startup flags are needed for a new receiver:
 - **Port:** starts at 8443, automatically advances if occupied, and remembers the chosen port. An explicit `--port` stays exact and errors if unavailable.
 - **Pairing:** displays the single-use five-minute QR automatically when no authorized device exists. Later runs reuse the receiver identity/certificate/credentials; `--pair` creates a new session when adding or re-pairing a phone.
 
-Startup prints the actual address, interface, destination and state directory. Preferences are stored in private `receiver-config.json`. The auto bind preference stays `auto`, so the address is rediscovered at each restart instead of freezing yesterday’s IP. To return from an explicit address to detection, start once with `--bind auto`. Explicit `--root`, `--bind`, `--port` and `--state` remain available. Wildcard/public binds are rejected.
+Startup prints the actual address, interface, destination and state directory. Preferences are stored in private `receiver-config.json`. The auto bind preference stays `auto`, so the address is rediscovered at each restart instead of freezing yesterday’s IP. While running, an automatic bind re-checks the LAN address every 10 seconds (5 in the desktop app) and moves the listener when the PC changes network, keeping the same port when it is free, certificate and receiver identity. Phones pin the certificate, not the address, but keep the address they paired with: update it in the app's Settings, or scan a new pairing QR from the same receiver. An explicit `--bind IP` never moves. To return from an explicit address to detection, start once with `--bind auto`. Explicit `--root`, `--bind`, `--port` and `--state` remain available. Wildcard/public binds are rejected.
 
 If migrating a pre-configuration receiver that already has upload receipts, provide its existing `--root` once. Older versions did not record that directory, so guessing could silently change its destination; after this one-time migration it is remembered. Existing custom `--state` also needs its override.
 

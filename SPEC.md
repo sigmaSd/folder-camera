@@ -162,6 +162,8 @@ Requirements:
 
 Desktop GUI follow-up accepted on 2026-10-05: provide a standalone desktop receiver with folder selection, expiring QR pairing, phone revocation, recent transfers, pause/start, tray controls and optional launch at login. Package ready-to-run downloads for Windows, macOS and Linux and link validated artifacts from the website alongside the signed Android APK. Keep the CLI for advanced use. Preserve existing receiver identities, certificate pins and old photo receipts when changing destinations. Public servers and cloud photo storage remain outside scope.
 
+Headless follow-up accepted on 2026-10-23: the desktop receiver runs with `--headless` (no window, no tray) and its loopback control listener offers `GET /status` and `POST /pairing` to other apps on the same PC, so they can draw the pairing QR themselves. The routes keep the activation listener's protections: 127.0.0.1 only, the bearer token from `desktop-instance.json`, and refusal of any request carrying `Origin`. Automatic binds follow the PC to a new LAN address with the same certificate and identity. The API is documented in [desktop-receiver.md](docs/desktop-receiver.md#local-control-api).
+
 ## 6. Pairing and transport security
 
 Use QR-based trust bootstrap:

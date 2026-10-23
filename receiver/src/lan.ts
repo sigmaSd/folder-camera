@@ -80,3 +80,14 @@ export async function detectLanAddress(): Promise<LanAddress> {
     : [];
   return selectLanAddress(addresses, routes);
 }
+/**
+ * What an automatic-bind listener should do after re-detecting the LAN address:
+ * keep serving, move to the newly selected address, or stop because no LAN is left.
+ */
+export function networkAction(
+  serving: string | null,
+  detected: string | null,
+): "keep" | "restart" | "lost" {
+  if (!detected) return "lost";
+  return detected === serving ? "keep" : "restart";
+}

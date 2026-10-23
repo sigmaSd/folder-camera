@@ -5,7 +5,7 @@ import { handler } from "./server.ts";
 import { certificate } from "./tls.ts";
 import { durableJson, noLinks, readJson, Serial } from "./files.ts";
 import { privateMode } from "./platform.ts";
-import { detectLanAddress } from "./lan.ts";
+import { detectLanAddress, type LanAddress, networkAction } from "./lan.ts";
 import { listenWithFallback } from "./listen.ts";
 import {
   integerOption,
@@ -35,11 +35,14 @@ export class Receiver {
   private pairing: Pairing | null = null;
   private qr: string | null = null;
   address: string | null = null;
+  /** The IP the listener is bound to, compared with each new detection. */
+  private bound: string | null = null;
   fingerprint: string | null = null;
   interfaceName: string | null = null;
   constructor(
     readonly state: string,
     private values = new Map<string, string>(),
+    private detect: () => Promise<LanAddress> = detectLanAddress,
   ) {
     this.auth = new Auth(state);
   }
@@ -129,9 +132,7 @@ export class Receiver {
     this.status = "starting";
     this.error = null;
     try {
-      const lan = this.settings.bind === "auto"
-        ? await detectLanAddress()
-        : null;
+      const lan = this.settings.bind === "auto" ? await this.detect() : null;
       const bind = lan?.address ?? this.settings.bind;
       if (!localIp(bind)) {
         throw new Error(
@@ -202,6 +203,7 @@ export class Receiver {
       this.address = `https://${
         bind.includes(":") ? `[${bind}]` : bind
       }:${port}`;
+      this.bound = bind;
       this.fingerprint = tls.fingerprint;
       this.interfaceName = lan?.interfaceName ?? null;
       ready = true;
@@ -224,7 +226,16 @@ export class Receiver {
     this.status = "pausing";
     const server = this.server;
     this.server = undefined;
-    if (server) await server.shutdown();
+    this.bound = null;
+    // The listener closes at once; do not let a stalled transfer on a vanished network block a restart.
+    if (server) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      await Promise.race([
+        server.shutdown(),
+        new Promise((resolve) => timer = setTimeout(resolve, 5000)),
+      ]);
+      clearTimeout(timer);
+    }
     await this.auth.cancelPairing();
     this.pairing = null;
     this.qr = null;
@@ -284,20 +295,17 @@ export class Receiver {
     try {
       await this.mutations.run(async () => {
         if (!this.wanted) return;
-        const lan = await detectLanAddress().catch(() => null);
-        if (!lan) {
+        const lan = await this.detect().catch(() => null);
+        const action = networkAction(
+          this.server ? this.bound : null,
+          lan?.address ?? null,
+        );
+        if (action === "lost") {
           if (this.server) await this.stopInner();
           this.status = "error";
           this.error = "Connect to Wi-Fi or Ethernet to receive photos.";
-          return;
-        }
-        if (
-          !this.address?.startsWith(
-            `https://${
-              lan.address.includes(":") ? `[${lan.address}]` : lan.address
-            }:`,
-          ) || !this.server
-        ) {
+        } else if (action === "restart") {
+          // Same certificate and identity: phones pin the fingerprint, not the address.
           await this.stopInner();
           await this.startInner().catch(() => {});
         }

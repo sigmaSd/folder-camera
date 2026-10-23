@@ -8,7 +8,7 @@ import { certificate } from "./tls.ts";
 import { durableJson, noLinks, readJson } from "./files.ts";
 import { stateDirectory } from "./state-directory.ts";
 import { listenWithFallback } from "./listen.ts";
-import { detectLanAddress } from "./lan.ts";
+import { detectLanAddress, networkAction } from "./lan.ts";
 import {
   integerOption,
   pairingNeeded,
@@ -150,43 +150,41 @@ export async function main(args: string[]) {
       timeout * 1000,
     );
     await store.init();
-    let ready = false;
     const serve = handler(auth, store, concurrency);
-    const { server, port } = listenWithFallback(
-      settings!.port,
-      v.has("--port"),
-      (port) =>
-        Deno.serve({
-          hostname: bind,
-          port,
-          cert: tls.cert,
-          key: tls.key,
-          onListen() {},
-        }, (request) =>
-          ready
-            ? serve(request)
-            : new Response(JSON.stringify({ version: 1, code: "starting" }), {
-              status: 503,
-              headers: { "Content-Type": "application/json" },
-            })),
-    );
-    settings!.port = port;
-    try {
-      await durableJson(settingsPath, settings);
-      ready = true;
-    } catch (e) {
-      await server.shutdown();
-      throw e;
-    }
-    const address = `https://${
-      bind.includes(":") ? `[${bind}]` : bind
-    }:${port}`;
-    console.log(
-      `Folder Camera v1\nAddress: ${address}${
-        lan ? ` (${lan.interfaceName}, automatic)` : ""
-      }\nDestination: ${root}\nState: ${state}\nReceiver ID: ${auth.receiverId}\nCertificate SHA-256: ${tls.fingerprint}\nPairing: first use displays a QR automatically; --pair creates a new single-use QR.`,
-    );
-    if (pairingNeeded(auth.list(), f.has("--pair"))) {
+    const formatAddress = (ip: string, port: number) =>
+      `https://${ip.includes(":") ? `[${ip}]` : ip}:${port}`;
+    // The certificate and receiver identity stay the same on every address.
+    const open = async (ip: string) => {
+      let ready = false;
+      const { server, port } = listenWithFallback(
+        settings!.port,
+        v.has("--port"),
+        (port) =>
+          Deno.serve({
+            hostname: ip,
+            port,
+            cert: tls.cert,
+            key: tls.key,
+            onListen() {},
+          }, (request) =>
+            ready
+              ? serve(request)
+              : new Response(JSON.stringify({ version: 1, code: "starting" }), {
+                status: 503,
+                headers: { "Content-Type": "application/json" },
+              })),
+      );
+      settings!.port = port;
+      try {
+        await durableJson(settingsPath, settings);
+        ready = true;
+      } catch (e) {
+        await server.shutdown();
+        throw e;
+      }
+      return { server, ip, address: formatAddress(ip, port) };
+    };
+    const showPairing = async (address: string) => {
       const pairing = await auth.startPairing(address, tls.fingerprint);
       console.log("Temporary pairing payload (expires in five minutes):");
       console.log(JSON.stringify(pairing));
@@ -196,14 +194,83 @@ export async function main(args: string[]) {
           small: true,
         }),
       );
+    };
+    let current: Awaited<ReturnType<typeof open>> | undefined = await open(
+      bind,
+    );
+    console.log(
+      `Folder Camera v1\nAddress: ${current.address}${
+        lan ? ` (${lan.interfaceName}, automatic)` : ""
+      }\nDestination: ${root}\nState: ${state}\nReceiver ID: ${auth.receiverId}\nCertificate SHA-256: ${tls.fingerprint}\nPairing: first use displays a QR automatically; --pair creates a new single-use QR.`,
+    );
+    if (pairingNeeded(auth.list(), f.has("--pair"))) {
+      await showPairing(current.address);
     }
+    const stopped = Promise.withResolvers<void>();
+    let following = false, stopping = false;
+    // Automatic binds follow the PC to a new network, e.g. a phone hotspot that hands out a new subnet.
+    const follow = async () => {
+      if (following || stopping) return;
+      following = true;
+      try {
+        const detected = await detectLanAddress().catch(() => null);
+        const action = networkAction(
+          current?.ip ?? null,
+          detected?.address ?? null,
+        );
+        if (action === "keep") return;
+        const previous = current;
+        current = undefined;
+        if (previous) {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          await Promise.race([
+            previous.server.shutdown(),
+            new Promise((resolve) => timer = setTimeout(resolve, 5000)),
+          ]);
+          clearTimeout(timer);
+        }
+        if (action === "lost") {
+          if (previous) {
+            console.log("LAN address lost; waiting for Wi-Fi or Ethernet.");
+          }
+          return;
+        }
+        current = await open(detected!.address);
+        if (stopping) {
+          await current.server.shutdown();
+          return;
+        }
+        console.log(
+          `Address changed: ${current.address} (${
+            detected!.interfaceName
+          }, automatic). Paired phones keep the same certificate; update the address on the phone or scan a new pairing QR.`,
+        );
+        if (pairingNeeded(auth.list(), false)) {
+          await showPairing(current.address);
+        }
+      } catch (e) {
+        console.error(
+          "Could not move to the new address: " +
+            (e instanceof Error ? e.message : String(e)),
+        );
+      } finally {
+        following = false;
+      }
+    };
+    const refresh = settings!.bind === "auto"
+      ? setInterval(() => void follow(), 10_000)
+      : undefined;
     const shutdown = () => {
-      server.shutdown().catch(() => {});
+      stopping = true;
+      clearInterval(refresh);
+      current?.server.shutdown().catch(() => {});
+      stopped.resolve();
     };
     Deno.addSignalListener("SIGINT", shutdown);
     Deno.addSignalListener("SIGTERM", shutdown);
     try {
-      await server.finished;
+      await stopped.promise;
+      await current?.server.finished;
     } finally {
       Deno.removeSignalListener("SIGINT", shutdown);
       Deno.removeSignalListener("SIGTERM", shutdown);
