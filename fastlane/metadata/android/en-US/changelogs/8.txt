@@ -1,0 +1,1 @@
+Pairing now works when a VPN such as Tailscale is on, and a failed pairing says what went wrong: an expired code, a wrong phone clock, an unreachable PC, the wrong PC, a code already used, or too many attempts.

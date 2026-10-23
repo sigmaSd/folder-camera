@@ -50,13 +50,13 @@ jobs:
         if: runner.os != 'Linux'
         run: python scripts/smoke_desktop.py .work/gui-directory
       - name: Build installer
-        run: python scripts/build_desktop.py --target '${{ matrix.target }}' --backend '${{ matrix.backend }}' --format '${{ matrix.format }}' --output '.work/artifacts/folder-camera-receiver-1.0.0-${{ matrix.platform }}.${{ matrix.format }}'
+        run: python scripts/build_desktop.py --target '${{ matrix.target }}' --backend '${{ matrix.backend }}' --format '${{ matrix.format }}' --output '.work/artifacts/folder-camera-receiver-1.1.0-${{ matrix.platform }}.${{ matrix.format }}'
       - name: Installer smoke (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a python scripts/smoke_installer.py '.work/artifacts/folder-camera-receiver-1.0.0-${{ matrix.platform }}.${{ matrix.format }}'
+        run: xvfb-run -a python scripts/smoke_installer.py '.work/artifacts/folder-camera-receiver-1.1.0-${{ matrix.platform }}.${{ matrix.format }}'
       - name: Installer smoke (Windows/macOS)
         if: runner.os != 'Linux'
-        run: python scripts/smoke_installer.py '.work/artifacts/folder-camera-receiver-1.0.0-${{ matrix.platform }}.${{ matrix.format }}'
+        run: python scripts/smoke_installer.py '.work/artifacts/folder-camera-receiver-1.1.0-${{ matrix.platform }}.${{ matrix.format }}'
       - name: Retain native diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

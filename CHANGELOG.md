@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.4
+
+- Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.
+- Say why pairing failed: an expired code (or a wrong phone clock), an unreachable PC, a certificate that doesn't match, a code already used, or too many attempts.
+
+## Receiver 1.1.0
+
+- `--headless` runs the desktop receiver with no window or tray icon.
+- A local control API on the token-protected loopback listener (`GET /status`, `POST /pairing`) lets other apps on the PC draw the pairing QR themselves. See docs/desktop-receiver.md.
+- Automatic binds follow the PC to a new network address, without a restart by hand.
+
 ## 1.0.3
 
 - Add a desktop receiver download button in Settings → PC sync, linking directly to Windows, macOS and Linux installers.
