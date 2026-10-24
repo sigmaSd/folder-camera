@@ -1,6 +1,12 @@
 # Current release status
 
-Updated 2026-10-18 (Africa/Tunis).
+Updated 2026-10-24 (Africa/Tunis).
+
+- [Desktop receiver 1.1.0 is published](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.1.0) with all six native installers, SHA256SUMS and a build manifest. It adds `--headless`, the loopback control API (`GET /status`, `POST /pairing`) and following the PC to a new LAN address. The site's downloads now point to 1.1.0.
+- Source/tag: `1e81f3acf2549f1a1272eecc5e4605ab14e0a7a5`. [Desktop acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/40029648282) passes on all six targets; the Apple Silicon job passed on its second attempt after its first DMG startup timed out at 60 s, while the same build's directory startup had passed. Published asset digests match the accepted artifacts. The CI Linux x64 AppImage was also run headless on Fedora 44, where `GET /status` and `POST /pairing` returned a valid code.
+- Android 1.0.4/versionCode 8 (VPN fallback route for pairing and transfers, specific pairing errors) is prepared on the same source. [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/40029648172) passes; device acceptance passes on Android 16 4-KB and 16-KB images, and the Android 17 emulator still does not become ready. It is not yet signed or published.
+
+## Android 1.0.3 release
 
 - [Android 1.0.3/versionCode 7 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.3) as a stable release. Settings → PC sync now links directly to the Windows, macOS and Linux receiver downloads and explains installation/pairing.
 - Source/tag: `4c981879c01c4b8e553e657a1ef2f9316f47603c`. Production app ID and signing certificate are retained.

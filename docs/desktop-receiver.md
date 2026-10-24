@@ -6,7 +6,7 @@ The implemented interface includes destination selection/opening, expiring QR pa
 
 Existing standard CLI profiles, identities and certificates are retained. On macOS a legacy XDG-style profile is reused when present. Receipt records bind saved photos to their original base directory before a folder change; earlier files are not moved and receipt/retry lookup does not silently redirect them.
 
-The [1.0.0 release](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0) contains all six validated installers, SHA256SUMS and a build manifest. The [product website](https://sigmasd.github.io/folder-camera/) links the signed Android APK and each desktop architecture. The owner tested the receiver and approved stable release on 2026-10-05. Publisher signing/notarization remains separate and pending.
+The [1.1.0 release](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.1.0) contains all six validated installers, SHA256SUMS and a build manifest; [1.0.0](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.0.0) was the first stable release. The [product website](https://sigmasd.github.io/folder-camera/) links the signed Android APK and each desktop architecture. The owner tested the receiver and approved stable release on 2026-10-05. Publisher signing/notarization remains separate and pending.
 
 ## Headless mode
 
