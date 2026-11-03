@@ -1,5 +1,11 @@
 # Changelog
 
+## Receiver 1.2.0
+
+- The local control API manages the receiver without its window: `GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start` and `POST /stop`. See docs/desktop-receiver.md.
+- `--exit-with-stdin` lets the app that started the receiver own it: the receiver quits when that app's end of stdin closes, even if the app crashed.
+- Documented: each `--state` folder is a separate receiver, so another app can run its own next to the user's.
+
 ## 1.0.4
 
 - Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.
