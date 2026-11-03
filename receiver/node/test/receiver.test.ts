@@ -6,15 +6,19 @@ import assert from "node:assert/strict";
 import { createHash, X509Certificate } from "node:crypto";
 import { request } from "node:https";
 import { createServer } from "node:net";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Receiver } from "../dist/index.js";
 
 const jpeg = await readFile(new URL("../../tests/fixtures/photo.jpg", import.meta.url));
 
+// In the repository's .work folder, as the Deno tests: the system's temp folder can sit behind a symlink (macOS'
+// /var) or a short name (Windows' RUNNER~1), which the receiver rightly refuses as a root.
+const work = fileURLToPath(new URL("../../../.work/node-tests/", import.meta.url));
 async function setup() {
-  const temp = await mkdtemp(join(tmpdir(), "folder-camera-node-"));
+  await mkdir(work, { recursive: true });
+  const temp = await realpath(await mkdtemp(join(work, "receiver-")));
   return { temp, root: join(temp, "photos"), state: join(temp, "state") };
 }
 
@@ -147,8 +151,6 @@ test("a saved port taken by something else: the next free one, kept", async () =
   const f = await setup();
   const busy = createServer();
   await new Promise<void>((resolve) => busy.listen(19621, "127.0.0.1", resolve));
-  await rm(f.state, { recursive: true, force: true });
-  const { mkdir } = await import("node:fs/promises");
   await mkdir(f.state, { recursive: true, mode: 0o700 });
   await writeFile(
     join(f.state, "receiver-config.json"),
