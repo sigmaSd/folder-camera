@@ -1,5 +1,11 @@
 # Changelog
 
+## Receiver engine 1.3.0 (Node package)
+
+- The receiver engine (`receiver/src`) runs on Node as well as Deno: files through `node:fs`, and on Node an HTTPS listener from `node:https` and a pid-file state lock. On Deno the desktop app and the CLI keep `Deno.serve`, `flock` and Windows' write-through moves, unchanged.
+- `receiver/node` packages it for apps that embed a receiver of their own (compiled JavaScript with type declarations), released as a tarball (`receiver-engine-v1.3.0`). Same protocol and state folder format: a state folder moves between the desktop app, the CLI and an embedding app with its phones still paired. See receiver/node/README.md.
+- Known issue in the desktop app 1.2.0: `--headless` still opens a window. The desktop runtime puts the first `Deno.serve` in a window of its own, and the app's interface server starts even when headless. Apps should embed the engine instead.
+
 ## Receiver 1.2.0
 
 - The local control API manages the receiver without its window: `GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start` and `POST /stop`. See docs/desktop-receiver.md.

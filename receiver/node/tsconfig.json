@@ -1,0 +1,24 @@
+{
+  // The receiver engine (../src, without the Deno CLI) compiled for Node: dist/*.js and their .d.ts
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "rootDir": "../src",
+    "outDir": "dist",
+    "declaration": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "rewriteRelativeImportExtensions": true,
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "paths": {
+      "@peculiar/x509": ["./node_modules/@peculiar/x509"],
+      "reflect-metadata": ["./node_modules/reflect-metadata"],
+      "qrcode": ["./node_modules/@types/qrcode"]
+    }
+  },
+  "include": ["../src/*.ts"],
+  "exclude": ["../src/main.ts"]
+}

@@ -10,7 +10,11 @@ The [1.2.0 release](https://github.com/sigmaSd/folder-camera/releases/tag/receiv
 
 ## Headless mode
 
-`--headless` runs the receiver with no window and no tray icon. It uses the same state folder and single-instance lock as the GUI; `--state`, `--root`, `--bind` and `--port` work as usual. Starting a second instance on the same state exits after notifying the running one. If the receiver cannot start (for example, the state is locked by the CLI), headless mode prints the error to stderr and exits with status 1. `SIGINT`/`SIGTERM` stop it cleanly and remove `desktop-instance.json`. `--background` only hides the window when a tray exists; `--headless` never creates one.
+`--headless` runs the receiver with no window and no tray icon. It uses the same state folder and single-instance lock as the GUI; `--state`, `--root`, `--bind` and `--port` work as usual. Starting a second instance on the same state exits after notifying the running one. If the receiver cannot start (for example, the state is locked by the CLI), headless mode prints the error to stderr and exits with status 1. `SIGINT`/`SIGTERM` stop it cleanly and remove `desktop-instance.json`. `--background` only hides the window when a tray exists.
+
+**Known issue (1.1.0, 1.2.0): a window opens anyway.** The desktop runtime takes the app's first `Deno.serve` (the interface server, started even when headless) and shows it in a window of its own. That window has no bindings, so it shows "No binding for 'snapshot'". The receiver behind it works. An app that wants a receiver with no window should embed the engine instead: [receiver/node](../receiver/node/README.md).
+
+**Embedding the engine.** The receiver engine (`receiver/src`) also runs on Node, packaged in `receiver/node` (released as `receiver-engine-vX.Y.Z` tarballs): an app runs a receiver inside its own process, with no separate program and no window, on its own state folder.
 
 **Separate instances.** Each state folder is a receiver of its own: its identity, certificate, paired phones, lock, saved port and `desktop-instance.json`. Another app can run its own receiver next to the user's by giving it its own `--state` (and `--root`); phones paired with one are unknown to the other. Without `--port`, a receiver whose saved port is taken on its address moves to the next free one and keeps it.
 

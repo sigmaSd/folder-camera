@@ -12,7 +12,7 @@ export function stateDirectory(
   } = {},
 ): string {
   const paths = environment.platform === "win32" ||
-      !environment.platform && Deno.build.os === "windows"
+      !environment.platform && process.platform === "win32"
     ? win32
     : posix;
   const { isAbsolute, join, resolve } = paths;

@@ -5,17 +5,27 @@ import {
   createPublicKey,
   X509Certificate,
 } from "node:crypto";
+import { lstat, readFile } from "node:fs/promises";
 import * as x509 from "@peculiar/x509";
-import { durableJson, noLinks, readJson, syncDirectory } from "./files.ts";
+import {
+  durableJson,
+  noLinks,
+  readJson,
+  syncDirectory,
+  writeNewFile,
+} from "./files.ts";
 import { privateMode } from "./platform.ts";
+import { isNotFound } from "./runtime.ts";
 interface Identity {
   version: 1;
   cert: string;
   key: string;
 }
 async function regular(path: string) {
-  const info = await Deno.lstat(path);
-  if (info.isSymlink || !info.isFile) throw new Error("Unsafe TLS state");
+  const info = await lstat(path);
+  if (info.isSymbolicLink() || !info.isFile()) {
+    throw new Error("Unsafe TLS state");
+  }
 }
 async function generate(bind: string): Promise<Identity> {
   const keys = await crypto.subtle.generateKey(
@@ -72,7 +82,7 @@ export async function certificate(state: string, bind: string) {
       await regular(path);
       return true;
     } catch (e) {
-      if (e instanceof Deno.errors.NotFound) return false;
+      if (isNotFound(e)) return false;
       throw e;
     }
   };
@@ -99,28 +109,14 @@ export async function certificate(state: string, bind: string) {
         haveCert,
       ]] as const
     ) {
-      if (!exists) {
-        const file = await Deno.open(path, {
-          createNew: true,
-          write: true,
-          mode: 0o600,
-        });
-        try {
-          const bytes = new TextEncoder().encode(text);
-          let at = 0;
-          while (at < bytes.length) at += await file.write(bytes.subarray(at));
-          await file.sync();
-        } finally {
-          file.close();
-        }
-      }
+      if (!exists) await writeNewFile(path, new TextEncoder().encode(text));
     }
     await syncDirectory(state);
   }
   await privateMode(keyPath, 0o600);
   await privateMode(certPath, 0o600);
-  const cert = await Deno.readTextFile(certPath),
-    key = await Deno.readTextFile(keyPath),
+  const cert = await readFile(certPath, "utf8"),
+    key = await readFile(keyPath, "utf8"),
     parsed = new X509Certificate(cert);
   if (
     !parsed.publicKey.export({ type: "spki", format: "der" }).equals(

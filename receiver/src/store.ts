@@ -2,10 +2,13 @@ import { jpegHeader } from "./jpeg.ts";
 import { join, resolve } from "node:path";
 import { independentRoots, privateMode, publishFile } from "./platform.ts";
 import { createHash } from "node:crypto";
+import { mkdir, open, rm } from "node:fs/promises";
+import { isAlreadyExists, isNotFound } from "./runtime.ts";
 import {
   durableJson,
   filenameFree,
   hashFile,
+  names,
   noLinks,
   portableDirectory,
   readJson,
@@ -53,34 +56,34 @@ export class PhotoStore {
     }
   }
   async init(): Promise<void> {
-    await Deno.mkdir(this.root, { recursive: true });
+    await mkdir(this.root, { recursive: true });
     await noLinks(this.root);
     await noLinks(this.state);
-    await Deno.mkdir(join(this.state, "receipts"), {
+    await mkdir(join(this.state, "receipts"), {
       recursive: true,
       mode: 0o700,
     });
     await noLinks(join(this.state, "receipts"));
-    await Deno.mkdir(join(this.state, "journals"), {
+    await mkdir(join(this.state, "journals"), {
       recursive: true,
       mode: 0o700,
     });
     await noLinks(join(this.state, "journals"));
-    await Deno.mkdir(this.partials, { recursive: true, mode: 0o700 });
+    await mkdir(this.partials, { recursive: true, mode: 0o700 });
     await noLinks(this.partials);
     await privateMode(this.partials, 0o700);
     // Startup precedes serving; published files with a journal are verified before receipt repair.
-    for await (const entry of Deno.readDir(join(this.state, "journals"))) {
-      if (!/^[0-9a-f-]{36}\.json$/.test(entry.name)) continue;
+    for (const name of await names(join(this.state, "journals"))) {
+      if (!/^[0-9a-f-]{36}\.json$/.test(name)) continue;
       const journal = await readJson<Journal>(
-        join(this.state, "journals", entry.name),
+        join(this.state, "journals", name),
       );
       if (!journal) continue;
       await this.recover(journal);
     }
-    for await (const entry of Deno.readDir(this.partials)) {
-      if (/^[0-9a-f-]{36}\.part$/.test(entry.name)) {
-        await Deno.remove(join(this.partials, entry.name));
+    for (const name of await names(this.partials)) {
+      if (/^[0-9a-f-]{36}\.part$/.test(name)) {
+        await rm(join(this.partials, name));
       }
     }
   }
@@ -145,10 +148,10 @@ export class PhotoStore {
         ...r,
         storageRoot: j.storageRoot ?? this.root,
       });
-      await Deno.remove(this.journalPath(r.photoId));
+      await rm(this.journalPath(r.photoId));
       await syncDirectory(join(this.state, "journals"));
     } catch (e) {
-      if (e instanceof Deno.errors.NotFound || e instanceof HttpError) return;
+      if (isNotFound(e) || e instanceof HttpError) return;
       throw e;
     }
   }
@@ -164,9 +167,9 @@ export class PhotoStore {
   /** Bind legacy receipts before changing the base; old photos are never redirected. */
   async bindLegacyDestinations(): Promise<void> {
     for (const directory of ["receipts", "journals"]) {
-      for await (const entry of Deno.readDir(join(this.state, directory))) {
-        if (!/^[0-9a-f-]{36}\.json$/.test(entry.name)) continue;
-        const path = join(this.state, directory, entry.name);
+      for (const name of await names(join(this.state, directory))) {
+        if (!/^[0-9a-f-]{36}\.json$/.test(name)) continue;
+        const path = join(this.state, directory, name);
         const record = await readJson<Record<string, unknown>>(path);
         if (record && !record.storageRoot) {
           await durableJson(path, { ...record, storageRoot: this.root });
@@ -207,11 +210,14 @@ export class PhotoStore {
       const temp = `${crypto.randomUUID()}.part`;
       const tempPath = join(this.partials, temp);
       await noLinks(this.partials);
-      const output = await Deno.open(tempPath, {
-        createNew: true,
-        write: true,
-        mode: 0o600,
-      });
+      const output = await open(tempPath, "wx", 0o600);
+      let closed = false;
+      const close = async () => {
+        if (!closed) {
+          closed = true;
+          await output.close();
+        }
+      };
       let published = false;
       try {
         const hash = createHash("sha256");
@@ -259,7 +265,11 @@ export class PhotoStore {
             hash.update(data.value);
             let at = 0;
             while (at < data.value.length) {
-              at += await output.write(data.value.subarray(at));
+              at += (await output.write(
+                data.value,
+                at,
+                data.value.length - at,
+              )).bytesWritten;
             }
           }
         } catch (e) {
@@ -276,7 +286,7 @@ export class PhotoStore {
           first[1] !== 216 || tail[0] !== 255 || tail[1] !== 217
         ) fail("invalid_content", 422);
         await output.sync();
-        output.close();
+        await close();
         if (old) return old;
         return await this.commit.run(async () => {
           const parent = await portableDirectory(
@@ -304,7 +314,7 @@ export class PhotoStore {
           published = true;
           await syncDirectory(parent);
           await this.persistReceipt(receipt, this.root);
-          await Deno.remove(this.journalPath(m.photoId));
+          await rm(this.journalPath(m.photoId));
           await syncDirectory(join(this.state, "journals"));
           try {
             this.onCommitted?.(receipt);
@@ -312,7 +322,7 @@ export class PhotoStore {
           return receipt;
         });
       } catch (e) {
-        if (e instanceof Deno.errors.AlreadyExists) fail("conflict", 409);
+        if (isAlreadyExists(e)) fail("conflict", 409);
         if (e instanceof HttpError) throw e;
         if (
           e instanceof Error &&
@@ -320,11 +330,9 @@ export class PhotoStore {
         ) fail("insufficient_storage", 507);
         fail("transient_failure", 503);
       } finally {
-        try {
-          output.close();
-        } catch { /* closed after sync */ }
+        await close().catch(() => {});
         // Journal is retained on publication/receipt failure; startup will validate the published bytes.
-        await Deno.remove(tempPath).catch(() => {});
+        await rm(tempPath).catch(() => {});
         if (
           !published
         ) {

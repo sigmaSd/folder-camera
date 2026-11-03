@@ -1,0 +1,45 @@
+name: Receiver engine for Node
+# The receiver engine (receiver/src) compiled for Node (receiver/node) and tested there end to end: the package
+# apps embed. The same sources are tested on Deno by desktop.yml.
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: ['receiver/src/**', 'receiver/node/**', 'receiver/tests/fixtures/**', '.github/workflows/receiver-node.yml']
+    tags: ['receiver-engine-v*']
+  pull_request:
+    paths: ['receiver/src/**', 'receiver/node/**', '.github/workflows/receiver-node.yml']
+permissions:
+  contents: read
+jobs:
+  node:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15]
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Build and test
+        working-directory: receiver/node
+        shell: bash
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          node --experimental-strip-types --test test/receiver.test.ts
+      - name: Package
+        if: matrix.os == 'ubuntu-24.04' && matrix.node == '24'
+        working-directory: receiver/node
+        run: npm pack
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: matrix.os == 'ubuntu-24.04' && matrix.node == '24'
+        with:
+          name: receiver-engine
+          path: receiver/node/folder-camera-receiver-*.tgz
+          retention-days: 30

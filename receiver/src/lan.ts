@@ -1,5 +1,6 @@
 import { networkInterfaces } from "node:os";
 import { isIP } from "node:net";
+import { readFile } from "node:fs/promises";
 import { localIp } from "./validation.ts";
 
 export interface InterfaceAddress {
@@ -75,8 +76,8 @@ export async function detectLanAddress(): Promise<LanAddress> {
       mac: item.mac,
     }))
   );
-  const routes = Deno.build.os === "linux"
-    ? defaultRoutes(await Deno.readTextFile("/proc/net/route").catch(() => ""))
+  const routes = process.platform === "linux"
+    ? defaultRoutes(await readFile("/proc/net/route", "utf8").catch(() => ""))
     : [];
   return selectLanAddress(addresses, routes);
 }

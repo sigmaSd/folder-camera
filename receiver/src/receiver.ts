@@ -3,10 +3,18 @@ import { Auth, type Pairing } from "./auth.ts";
 import { PhotoStore } from "./store.ts";
 import { handler } from "./server.ts";
 import { certificate } from "./tls.ts";
-import { durableJson, noLinks, readJson, Serial } from "./files.ts";
+import { durableJson, names, noLinks, readJson, Serial } from "./files.ts";
 import { privateMode } from "./platform.ts";
 import { detectLanAddress, type LanAddress, networkAction } from "./lan.ts";
-import { listenWithFallback } from "./listen.ts";
+import { listenWithFallbackAsync } from "./listen.ts";
+import { lstat, mkdir } from "node:fs/promises";
+import {
+  isNotFound,
+  lockState,
+  serveTls,
+  type StateLock,
+  type TlsListener,
+} from "./runtime.ts";
 import {
   integerOption,
   type ReceiverSettings,
@@ -21,8 +29,8 @@ export interface Arrival extends Receipt {
 export class Receiver {
   readonly auth: Auth;
   settings!: ReceiverSettings;
-  private lock?: Deno.FsFile;
-  private server?: Deno.HttpServer;
+  private lock?: StateLock;
+  private server?: TlsListener;
   private store?: PhotoStore;
   private mutations = new Serial();
   private saveActivity = new Serial();
@@ -47,30 +55,25 @@ export class Receiver {
     this.auth = new Auth(state);
   }
   async init(management = false) {
-    await Deno.mkdir(this.state, { recursive: true, mode: 0o700 });
+    await mkdir(this.state, { recursive: true, mode: 0o700 });
     await noLinks(this.state);
     await privateMode(this.state, 0o700);
     const path = join(this.state, "process.lock");
     try {
-      const info = await Deno.lstat(path);
-      if (info.isSymlink || !info.isFile) throw new Error("Unsafe state lock");
+      const info = await lstat(path);
+      if (info.isSymbolicLink() || !info.isFile()) {
+        throw new Error("Unsafe state lock");
+      }
     } catch (e) {
-      if (!(e instanceof Deno.errors.NotFound)) throw e;
+      if (!isNotFound(e)) throw e;
     }
-    this.lock = await Deno.open(path, {
-      create: true,
-      write: true,
-      mode: 0o600,
-    });
-    if (!await this.lock.tryLock(true)) {
-      this.lock.close();
-      this.lock = undefined;
+    const lock = await lockState(path);
+    if (!lock) {
       throw new Error(
         "Receiver state is in use; stop the running receiver before offline management.",
       );
     }
-    await this.lock.truncate(0);
-    await this.lock.write(new TextEncoder().encode(String(Deno.pid)));
+    this.lock = lock;
     await this.auth.init();
     if (management) return;
     const saved = await readJson<ReceiverSettings>(
@@ -81,15 +84,15 @@ export class Receiver {
     if (!saved && !this.values.has("--root")) {
       for (const name of ["receipts", "journals"]) {
         try {
-          for await (const entry of Deno.readDir(join(this.state, name))) {
-            if (entry.isFile && entry.name.endsWith(".json")) {
+          for (const entry of await names(join(this.state, name))) {
+            if (entry.endsWith(".json")) {
               throw new Error(
                 "Existing uploads from an older receiver were found. Start once with --root YOUR_EXISTING_PHOTO_FOLDER; it will be remembered automatically.",
               );
             }
           }
         } catch (e) {
-          if (!(e instanceof Deno.errors.NotFound)) throw e;
+          if (!isNotFound(e)) throw e;
         }
       }
     }
@@ -179,20 +182,17 @@ export class Receiver {
         },
       );
       let ready = false;
-      const { server, port } = listenWithFallback(
+      const { server, port } = await listenWithFallbackAsync(
         this.settings.port,
         this.values.has("--port"),
         (port) =>
-          Deno.serve({
-            hostname: bind,
-            port,
-            cert: tls.cert,
-            key: tls.key,
-            onListen() {},
-          }, (request) =>
-            ready
-              ? serve(request)
-              : new Response("Receiver starting", { status: 503 })),
+          serveTls(
+            { hostname: bind, port, cert: tls.cert, key: tls.key },
+            (request) =>
+              ready ? serve(request) : Promise.resolve(
+                new Response("Receiver starting", { status: 503 }),
+              ),
+          ),
       );
       this.server = server;
       this.settings.port = port;
@@ -322,8 +322,7 @@ export class Receiver {
       await this.saveActivity.run(() => Promise.resolve());
     } finally {
       if (this.lock) {
-        await this.lock.unlock();
-        this.lock.close();
+        await this.lock.release();
         this.lock = undefined;
       }
     }

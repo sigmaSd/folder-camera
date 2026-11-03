@@ -1,5 +1,7 @@
 import { join, parse, relative, resolve, sep, win32 } from "node:path";
-export const windows = Deno.build.os === "windows";
+import { chmod, link, rename, unlink } from "node:fs/promises";
+import { codedError } from "./runtime.ts";
+export const windows = process.platform === "win32";
 export function independentRoots(root: string, state: string): boolean {
   const contains = (parent: string, child: string) => {
     const path = relative(parent, child);
@@ -17,37 +19,53 @@ export function pathIdentity(path: string): string {
   return windows ? canonical.toLowerCase() : canonical;
 }
 export async function privateMode(path: string, mode: number) {
-  if (!windows) await Deno.chmod(path, mode);
+  if (!windows) await chmod(path, mode);
 }
-function windowsLibrary() {
-  const system = Deno.env.get("SystemRoot");
+interface Kernel32 {
+  symbols: {
+    MoveFileExW(from: Uint8Array, to: Uint8Array, flags: number): number;
+    GetLastError(): number;
+  };
+}
+type DlOpen = (path: string, symbols: Record<string, unknown>) => Kernel32;
+/** Deno's FFI, where the receiver runs on Deno (Node has none: it publishes with fs). */
+const dlopen = (globalThis as unknown as { Deno?: { dlopen?: DlOpen } }).Deno
+  ?.dlopen;
+function windowsLibrary(open: DlOpen) {
+  const system = process.env.SystemRoot;
   if (!system || !parse(system).root) {
     throw new Error("Windows system directory is unavailable");
   }
-  return Deno.dlopen(join(system, "System32", "kernel32.dll"), {
+  return open(join(system, "System32", "kernel32.dll"), {
     MoveFileExW: { parameters: ["buffer", "buffer", "u32"], result: "i32" },
     GetLastError: { parameters: [], result: "u32" },
   });
 }
-let kernel: ReturnType<typeof windowsLibrary> | undefined;
+let kernel: Kernel32 | undefined;
 function wide(value: string) {
   value = win32.toNamespacedPath(value);
   const data = new Uint16Array(value.length + 1);
   for (let i = 0; i < value.length; i++) data[i] = value.charCodeAt(i);
   return new Uint8Array(data.buffer);
 }
-/** Windows uses no-replace/write-through moves; POSIX publication uses hard links. */
+/**
+ * Windows uses no-replace/write-through moves (on Node: a hard link, then the source removed); POSIX publication
+ * uses hard links. An occupied target fails with EEXIST.
+ */
 export async function publishFile(
   source: string,
   target: string,
   replace = false,
 ) {
-  if (!windows) {
-    if (replace) await Deno.rename(source, target);
-    else await Deno.link(source, target);
+  if (!windows || !dlopen) {
+    if (replace) await rename(source, target);
+    else {
+      await link(source, target);
+      if (windows) await unlink(source);
+    }
     return;
   }
-  kernel ??= windowsLibrary();
+  kernel ??= windowsLibrary(dlopen);
   if (
     !kernel.symbols.MoveFileExW(
       wide(source),
@@ -57,7 +75,7 @@ export async function publishFile(
   ) {
     const error = kernel.symbols.GetLastError();
     if (error === 80 || error === 183) {
-      throw new Deno.errors.AlreadyExists("Destination exists");
+      throw codedError("Destination exists", "EEXIST");
     }
     if (error === 112) throw new Error("disk full");
     throw new Error(`Windows file publication failed (${error})`);
