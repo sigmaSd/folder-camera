@@ -1,17 +1,17 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "candidate": false,
-  "sourceCommit": "1e81f3acf2549f1a1272eecc5e4605ab14e0a7a5",
+  "sourceCommit": "365e89947d41ab2b449fdd942fefdc0300da203e",
   "runtime": "Deno 2.9.7 / Laufey 0.7.0",
-  "acceptanceRun": "https://github.com/sigmaSd/folder-camera/actions/runs/40029648282",
+  "acceptanceRun": "https://github.com/sigmaSd/folder-camera/actions/runs/41609031356",
   "platforms": [
     {
       "conclusion": "success",
-      "name": "macos-apple-silicon"
+      "name": "macos-intel"
     },
     {
       "conclusion": "success",
-      "name": "windows-x64"
+      "name": "macos-apple-silicon"
     },
     {
       "conclusion": "success",
@@ -19,47 +19,47 @@
     },
     {
       "conclusion": "success",
-      "name": "macos-intel"
+      "name": "linux-x64"
+    },
+    {
+      "conclusion": "success",
+      "name": "windows-x64"
     },
     {
       "conclusion": "success",
       "name": "linux-arm64"
-    },
-    {
-      "conclusion": "success",
-      "name": "linux-x64"
     }
   ],
   "installers": [
     {
-      "filename": "folder-camera-receiver-1.1.0-linux-arm64.AppImage",
+      "filename": "folder-camera-receiver-1.2.0-linux-arm64.AppImage",
       "bytes": 34327048,
-      "sha256": "df404b92dca9e26cce41628bea82d8d063242ec6263fb3dff06a685c4aa28897"
+      "sha256": "51679f27604328c33f462efc6438f26932b14af6cbf3a61fddba7ca12882885e"
     },
     {
-      "filename": "folder-camera-receiver-1.1.0-linux-x64.AppImage",
-      "bytes": 35371512,
-      "sha256": "184321b6902c176fce671c23acfdc0986ef7009d2c93482991f27411233212c2"
+      "filename": "folder-camera-receiver-1.2.0-linux-x64.AppImage",
+      "bytes": 35375608,
+      "sha256": "f5cb616a0333d2119e0e6991cd61785a612087d4b07977bbde6dacb244a75a47"
     },
     {
-      "filename": "folder-camera-receiver-1.1.0-macos-apple-silicon.dmg",
-      "bytes": 158672247,
-      "sha256": "57ef617cb977048b206338c0af5aeab45e12f3a5e4e8ec207bbc58500771d5ab"
+      "filename": "folder-camera-receiver-1.2.0-macos-apple-silicon.dmg",
+      "bytes": 158674309,
+      "sha256": "d668f33e0017fb31d773c2af8aaa04e8af7794b0561b7a1cc7bfa90eb5773b98"
     },
     {
-      "filename": "folder-camera-receiver-1.1.0-macos-intel.dmg",
-      "bytes": 179899681,
-      "sha256": "d45e136fa4eadbe73683063a71e19cfbeb9ed9519d7c318084a0256068b6d8e8"
+      "filename": "folder-camera-receiver-1.2.0-macos-intel.dmg",
+      "bytes": 179901891,
+      "sha256": "23383172b4c4ffba80b63690305a2b88a9d3855a4a19c4394682f8092bcacade"
     },
     {
-      "filename": "folder-camera-receiver-1.1.0-windows-arm64.msi",
-      "bytes": 31621120,
-      "sha256": "02e4ee1b911fbd81e76fd0544a9b35fcd4e1195a5e52ac916c0efdd50bdbe7d9"
+      "filename": "folder-camera-receiver-1.2.0-windows-arm64.msi",
+      "bytes": 31625216,
+      "sha256": "21652349fba13338a44332ff5eb8624d553f1e4ee7918b9485b20a8169a40378"
     },
     {
-      "filename": "folder-camera-receiver-1.1.0-windows-x64.msi",
+      "filename": "folder-camera-receiver-1.2.0-windows-x64.msi",
       "bytes": 33304576,
-      "sha256": "ad4c5f05d1f81374428806d9767d67c825b80179165d60ecf2a983b1aa111285"
+      "sha256": "9f9cf34085588a194843696f0c5b6db0d1ac9628c371e0cd5d44e97b745cdc3a"
     }
   ]
 }

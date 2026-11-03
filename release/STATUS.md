@@ -1,6 +1,11 @@
 # Current release status
 
-Updated 2026-10-24 (Africa/Tunis).
+Updated 2026-11-03 (Africa/Tunis).
+
+- [Desktop receiver 1.2.0 is published](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.2.0) with all six native installers, SHA256SUMS and a build manifest. Its control API manages phones, arrivals and listening (`GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start`, `POST /stop`), and `--exit-with-stdin` ties a receiver to the app that started it. The site's downloads now point to 1.2.0.
+- Source/tag: `365e89947d41ab2b449fdd942fefdc0300da203e`. [Desktop acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/41609031356) passes on all six targets. The installers were attached from that run by [the attach workflow](https://github.com/sigmaSd/folder-camera/actions/runs/41612882085), after matching the published SHA256SUMS. The CI Linux x64 AppImage was also run headless with `--exit-with-stdin` on Fedora 44: every control route answered as documented, and it exited cleanly when its stdin closed. In about 40 exits, 2 took longer: once more than 10 s, once 16 s ending in a crash (exit 139), both after the instance file was removed; not reproduced in 30 later runs.
+
+## Receiver 1.1.0 release
 
 - [Desktop receiver 1.1.0 is published](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.1.0) with all six native installers, SHA256SUMS and a build manifest. It adds `--headless`, the loopback control API (`GET /status`, `POST /pairing`) and following the PC to a new LAN address. The site's downloads now point to 1.1.0.
 - Source/tag: `1e81f3acf2549f1a1272eecc5e4605ab14e0a7a5`. [Desktop acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/40029648282) passes on all six targets; the Apple Silicon job passed on its second attempt after its first DMG startup timed out at 60 s, while the same build's directory startup had passed. Published asset digests match the accepted artifacts. The CI Linux x64 AppImage was also run headless on Fedora 44, where `GET /status` and `POST /pairing` returned a valid code.
