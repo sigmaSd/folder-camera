@@ -1,0 +1,39 @@
+name: Attach receiver installers to a release
+# The installers of a desktop acceptance run (desktop.yml), attached to a receiver release from GitHub itself:
+# no re-upload from a slow connection. They must match the SHA256SUMS already on the release, computed from the
+# same run's artifacts after they were checked.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Desktop acceptance run whose installers are published
+        required: true
+      tag:
+        description: Receiver release tag (receiver-vX.Y.Z), draft or published, with its SHA256SUMS
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  attach:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_ID: ${{ inputs.run_id }}
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Download the run's installers
+        run: |
+          [[ "$RUN_ID" =~ ^[0-9]+$ && "$TAG" =~ ^receiver-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "bad inputs"; exit 1; }
+          gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -p 'receiver-*' -D artifacts
+          mkdir out && find artifacts -type f \( -name '*.AppImage' -o -name '*.msi' -o -name '*.dmg' \) -exec mv {} out/ \;
+          ls -l out
+      - name: Check them against the release's SHA256SUMS
+        run: |
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p SHA256SUMS -D sums
+          cd out
+          [ "$(ls | wc -l)" = "$(wc -l < ../sums/SHA256SUMS)" ] || { echo "installers and SHA256SUMS differ"; exit 1; }
+          sha256sum -c ../sums/SHA256SUMS
+      - name: Attach them
+        run: gh release upload "$TAG" -R "$GITHUB_REPOSITORY" out/* --clobber
