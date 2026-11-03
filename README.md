@@ -51,7 +51,7 @@ Portable names are preserved exactly. Limits and rejected names are specified in
 
 ## Optional receiver
 
-The desktop app provides QR pairing, folder selection, phone management, recent arrivals, tray controls and optional launch at login. Downloadable desktop packages include the runtime and internal certificate generation; users do not install Deno or OpenSSL. See [desktop release documentation](docs/desktop-receiver.md) for platform validation and signing status. Started with `--headless`, it runs with no window or tray, and other apps on the same PC can read its status and request pairing codes through a [local control API](docs/desktop-receiver.md#local-control-api).
+The desktop app provides QR pairing, folder selection, phone management, recent arrivals, tray controls and optional launch at login. Downloadable desktop packages include the runtime and internal certificate generation; users do not install Deno or OpenSSL. See [desktop release documentation](docs/desktop-receiver.md) for platform validation and signing status. Started with `--headless`, it runs with no window or tray, and other apps on the same PC can read its status, request pairing codes, manage paired phones and list arrivals through a [local control API](docs/desktop-receiver.md#local-control-api). An app can run its own receiver with its own `--state`, tied to it by `--exit-with-stdin`.
 
 For CLI/source development, install Deno **2.9.7**. Dependencies are open source and pinned in `receiver/deno.lock`; bundled license notices are under `third_party/receiver`.
 

@@ -1,6 +1,6 @@
 # Desktop receiver release
 
-The GUI uses Deno Desktop 2.9.7 and the same protocol/storage/authentication engine as the CLI. The first Deno.serve listener serves bundled GUI assets on Deno's loopback port; the second listener serves certificate-scoped HTTPS on the chosen private LAN interface. This behavior was verified in a packaged native probe, not inferred from the documentation. Privileged GUI controls are per-window native bindings. The only HTTP control surface is the token-protected loopback listener described under [Local control API](#local-control-api); it cannot revoke phones, change folders or stop the receiver.
+The GUI uses Deno Desktop 2.9.7 and the same protocol/storage/authentication engine as the CLI. The first Deno.serve listener serves bundled GUI assets on Deno's loopback port; the second listener serves certificate-scoped HTTPS on the chosen private LAN interface. This behavior was verified in a packaged native probe, not inferred from the documentation. Privileged GUI controls are per-window native bindings. The only HTTP control surface is the token-protected loopback listener described under [Local control API](#local-control-api); it can list and revoke phones, list recent arrivals, and start or stop listening, but it cannot change folders or the launch-at-login and tray preferences.
 
 The implemented interface includes destination selection/opening, expiring QR pairing, paired-phone revocation, active transfers/recent arrivals, pause/start, optional launch-at-login and optional close-to-tray. A native OS folder dialog is used where available; the app's own folder browser remains available when a platform helper is unavailable. The desktop runtime and certificate generation are bundled; users do not install Deno or OpenSSL.
 
@@ -11,6 +11,10 @@ The [1.1.0 release](https://github.com/sigmaSd/folder-camera/releases/tag/receiv
 ## Headless mode
 
 `--headless` runs the receiver with no window and no tray icon. It uses the same state folder and single-instance lock as the GUI; `--state`, `--root`, `--bind` and `--port` work as usual. Starting a second instance on the same state exits after notifying the running one. If the receiver cannot start (for example, the state is locked by the CLI), headless mode prints the error to stderr and exits with status 1. `SIGINT`/`SIGTERM` stop it cleanly and remove `desktop-instance.json`. `--background` only hides the window when a tray exists; `--headless` never creates one.
+
+**Separate instances.** Each state folder is a receiver of its own: its identity, certificate, paired phones, lock, saved port and `desktop-instance.json`. Another app can run its own receiver next to the user's by giving it its own `--state` (and `--root`); phones paired with one are unknown to the other. Without `--port`, a receiver whose saved port is taken on its address moves to the next free one and keeps it.
+
+**Owned by another app.** `--exit-with-stdin` makes the receiver quit cleanly when its standard input closes: the app that started it keeps its end of a pipe open, and when that app quits, crashes or is killed, the receiver stops too. Data written to stdin is ignored. Combined with `--headless` and a private `--state`, the receiver lives and dies with the app that owns it.
 
 ## Local control API
 
@@ -25,12 +29,19 @@ Other apps on the same PC (for example, one that draws the pairing QR itself) ca
 | `GET /status` | 200 | `{"version":1,"status":"ready","error":null,"address":"https://192.168.1.38:8443","root":"/home/user/Captures","devices":1,"pairing":{"expiresAt":1792760000000}}` |
 | `POST /pairing` | 200 | `{"version":1,"receiverId":"…","endpoint":"https://192.168.1.38:8443","fingerprint":"<64 hex>","secret":"<43 chars>","expiresAt":1792760000000}` |
 | `POST /activate` | 204 | none; shows and focuses the window (does nothing in headless mode) |
+| `GET /devices` | 200 | `{"version":1,"devices":[{"id":"<uuid>","name":"Pixel 8","pairedAt":1792760000000}]}` |
+| `POST /devices/<id>/revoke` | 204 | none; `404 {"version":1,"code":"unknown_device"}` for a phone that isn't paired or is already revoked |
+| `GET /arrivals` | 200 | `{"version":1,"arrivals":[{"photoId":"<uuid>","filename":"20261103_101500.jpg","relativePath":"Job A","root":"/home/user/Captures","byteSize":2345678,"receivedAt":1792760000000}]}` |
+| `POST /start` | 200 | the `GET /status` body, once the receiver has started or failed to |
+| `POST /stop` | 200 | the `GET /status` body, once the receiver has stopped listening |
 
 `GET /status`: `status` is `starting`, `ready`, `pausing`, `stopped` or `error`; `error` is a human-readable message or `null`; `address` is the HTTPS endpoint phones use, or `null` while not listening; `root` is the destination folder or `null` before one is set; `devices` counts paired phones that are not revoked; `pairing` is `{"expiresAt": <ms since epoch>}` while a pairing code is pending, else `null`.
 
 `POST /pairing` issues a fresh single-use code that expires in five minutes, replacing any pending one (the window's QR, if shown, switches to it). Encode the response body, unchanged, as the QR text: it is exactly the payload the Android app scans. Treat `secret` as sensitive and do not log it. When the receiver is not listening, the response is `409 {"version":1,"code":"not_running","status":"<status>"}`, or `503` with the same body while it is still starting; retry after `GET /status` reports `ready`.
 
 When the PC changes network, `address` changes. A code issued before the change carries the old address, so request a new one.
+
+`GET /devices` lists the paired phones that are not revoked, by pairing time; `pairedAt` is in ms since epoch. A revoked phone can no longer send photos and must pair again. `GET /arrivals` lists the last 30 photos received, newest first: the file is `<root>/<relativePath>/<filename>`, with `root` as it was when the photo arrived. `POST /start` and `POST /stop` are the window's start and pause: a failed start answers `200` with `"status":"error"` and the reason in `error`. Stopping cancels a pending pairing code.
 
 ## Packaging
 

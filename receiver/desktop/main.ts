@@ -4,7 +4,7 @@ import { Receiver } from "../src/receiver.ts";
 import { stateDirectory } from "../src/state-directory.ts";
 import { durableJson, readJson } from "../src/files.ts";
 import * as system from "./system.ts";
-import { controlHandler } from "./control.ts";
+import { controlArrival, controlDevice, controlHandler } from "./control.ts";
 interface NativeWindow extends EventTarget {
   bind(name: string, handler: (...args: unknown[]) => unknown): void;
   show(): void;
@@ -74,7 +74,11 @@ for (let i = 0; i < Deno.args.length; i++) {
     ["--state", "--root", "--bind", "--port"].includes(Deno.args[i]) &&
     Deno.args[i + 1]
   ) values.set(Deno.args[i], Deno.args[++i]);
-  else if (!["--background", "--headless", "--smoke"].includes(Deno.args[i])) {
+  else if (
+    !["--background", "--headless", "--exit-with-stdin", "--smoke"].includes(
+      Deno.args[i],
+    )
+  ) {
     throw new Error("Invalid desktop argument");
   }
 }
@@ -194,6 +198,27 @@ async function boot() {
                 ? { expiresAt: current.pairing.expiresAt }
                 : null,
             };
+          },
+          devices: () =>
+            initialized ? receiver.snapshot().devices.map(controlDevice) : [],
+          async revoke(id) {
+            if (
+              !initialized ||
+              !receiver.auth.list().some((d) => d.id === id && !d.revoked)
+            ) return false;
+            await receiver.revoke(id);
+            return true;
+          },
+          arrivals: () =>
+            initialized ? receiver.snapshot().recent.map(controlArrival) : [],
+          async start() {
+            if (!initialized) {
+              throw new Error(startupError ?? "Receiver is starting");
+            }
+            await receiver.start();
+          },
+          async stop() {
+            if (initialized) await receiver.stop();
           },
         }),
       );
@@ -332,6 +357,15 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
   try {
     Deno.addSignalListener(signal, () => void quit());
   } catch { /* Windows only delivers SIGINT. */ }
+}
+// Owned by the app that started it: when that app's end of stdin closes (it quit, crashed or was killed), quit too.
+if (Deno.args.includes("--exit-with-stdin")) {
+  (async () => {
+    try {
+      for await (const _ of Deno.stdin.readable) { /* input is ignored */ }
+    } catch { /* no stdin at all: nobody owns this receiver any more */ }
+    void quit();
+  })();
 }
 await boot();
 if (!quitting && headless && !initialized) {

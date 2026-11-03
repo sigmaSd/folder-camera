@@ -1,4 +1,11 @@
-import { controlHandler, type ControlStatus } from "../desktop/control.ts";
+import { join } from "node:path";
+import {
+  controlArrival,
+  controlDevice,
+  controlHandler,
+  type ControlStatus,
+  type ControlTarget,
+} from "../desktop/control.ts";
 import { networkAction } from "../src/lan.ts";
 import { Receiver } from "../src/receiver.ts";
 import { assert, setup } from "./helpers.ts";
@@ -22,6 +29,24 @@ function statusOf(r: Receiver): ControlStatus {
     pairing: s.pairing ? { expiresAt: s.pairing.expiresAt } : null,
   };
 }
+/** The desktop app's control target (desktop/main.ts) for an initialized receiver. */
+function targetOf(r: Receiver, activate = () => {}): ControlTarget {
+  return {
+    activate,
+    pair: async () => (await r.pair()).pairing,
+    status: () => statusOf(r),
+    devices: () => r.snapshot().devices.map(controlDevice),
+    async revoke(id) {
+      if (!r.auth.list().some((d) => d.id === id && !d.revoked)) return false;
+      await r.revoke(id);
+      return true;
+    },
+    arrivals: () => r.snapshot().recent.map(controlArrival),
+    start: async () => void await r.start(),
+    stop: async () => void await r.stop(),
+  };
+}
+const unused = () => Promise.reject(new Error("not reached"));
 
 Deno.test("control API requires the token, refuses browsers and hands out the exact QR payload", async () => {
   const f = await setup();
@@ -30,18 +55,20 @@ Deno.test("control API requires the token, refuses browsers and hands out the ex
     new Map([["--root", f.root], ["--bind", "127.0.0.1"], ["--port", "19523"]]),
   );
   let activated = 0;
-  const handler = controlHandler(token, {
-    activate: () => activated++,
-    pair: async () => (await r.pair()).pairing,
-    status: () => statusOf(r),
-  });
+  const handler = controlHandler(token, targetOf(r, () => activated++));
   try {
     await r.init();
     for (
-      const [method, path] of [["GET", "/status"], ["POST", "/pairing"], [
-        "POST",
-        "/activate",
-      ]]
+      const [method, path] of [
+        ["GET", "/status"],
+        ["POST", "/pairing"],
+        ["POST", "/activate"],
+        ["GET", "/devices"],
+        ["POST", `/devices/${crypto.randomUUID()}/revoke`],
+        ["GET", "/arrivals"],
+        ["POST", "/start"],
+        ["POST", "/stop"],
+      ]
     ) {
       assert.equal((await call(handler, method, path, {})).status, 403);
       assert.equal(
@@ -124,8 +151,13 @@ Deno.test("control API reports a starting receiver as unavailable", async () => 
   };
   const handler = controlHandler(token, {
     activate() {},
-    pair: () => Promise.reject(new Error("not reached")),
+    pair: unused,
     status: () => starting,
+    devices: () => [],
+    revoke: unused,
+    arrivals: () => [],
+    start: unused,
+    stop: unused,
   });
   const response = await call(handler, "POST", "/pairing");
   assert.equal(response.status, 503);
@@ -134,6 +166,102 @@ Deno.test("control API reports a starting receiver as unavailable", async () => 
     code: "not_running",
     status: "starting",
   });
+});
+
+Deno.test("control API lists and revokes phones, lists arrivals, and starts and stops the receiver", async () => {
+  const f = await setup();
+  const arrival = {
+    version: 1,
+    photoId: crypto.randomUUID(),
+    relativePath: "Été/Job A",
+    filename: "20261103_test.jpg",
+    mimeType: "image/jpeg",
+    byteSize: 1234,
+    sha256: "c".repeat(64),
+    receiverId: crypto.randomUUID(),
+    receivedAt: 1793750000000,
+    root: f.root,
+  };
+  await Deno.writeTextFile(
+    join(f.state, "activity.json"),
+    JSON.stringify([arrival]),
+  );
+  const r = new Receiver(
+    f.state,
+    new Map([["--root", f.root], ["--bind", "127.0.0.1"], ["--port", "19525"]]),
+  );
+  const handler = controlHandler(token, targetOf(r));
+  try {
+    await r.init();
+    const status = async () =>
+      (await (await call(handler, "GET", "/status")).json()).status;
+
+    const started = await call(handler, "POST", "/start");
+    assert.equal(started.status, 200);
+    assert.equal((await started.json()).status, "ready");
+    const code = await (await call(handler, "POST", "/pairing")).json();
+    await r.auth.pair({ ...code, deviceName: "Pixel" });
+
+    const listed = await (await call(handler, "GET", "/devices")).json();
+    assert.equal(listed.version, 1);
+    assert.equal(listed.devices.length, 1);
+    const [phone] = listed.devices;
+    assert.deepEqual(Object.keys(phone).sort(), ["id", "name", "pairedAt"]);
+    assert.equal(phone.name, "Pixel");
+    assert.ok(Number.isSafeInteger(phone.pairedAt));
+
+    assert.deepEqual(await (await call(handler, "GET", "/arrivals")).json(), {
+      version: 1,
+      arrivals: [{
+        photoId: arrival.photoId,
+        filename: arrival.filename,
+        relativePath: arrival.relativePath,
+        root: f.root,
+        byteSize: arrival.byteSize,
+        receivedAt: arrival.receivedAt,
+      }],
+    });
+
+    const unknown = await call(
+      handler,
+      "POST",
+      `/devices/${crypto.randomUUID()}/revoke`,
+    );
+    assert.equal(unknown.status, 404);
+    assert.equal((await unknown.json()).code, "unknown_device");
+    assert.equal(
+      (await call(handler, "POST", `/devices/${phone.id}/revoke`)).status,
+      204,
+    );
+    assert.deepEqual(await (await call(handler, "GET", "/devices")).json(), {
+      version: 1,
+      devices: [],
+    });
+    assert.equal(
+      (await call(handler, "POST", `/devices/${phone.id}/revoke`)).status,
+      404,
+    );
+    assert.equal(
+      (await call(handler, "POST", "/devices/not-an-id/revoke")).status,
+      404,
+    );
+
+    const stopped = await call(handler, "POST", "/stop");
+    assert.equal((await stopped.json()).status, "stopped");
+    await assert.rejects(
+      fetch("https://127.0.0.1:19525/v1/health", {
+        signal: AbortSignal.timeout(2000),
+      }),
+    );
+    assert.equal(await status(), "stopped");
+    assert.equal(
+      (await (await call(handler, "POST", "/start")).json()).status,
+      "ready",
+    );
+  } finally {
+    await r.close().catch(() => {});
+    await f.cleanup();
+  }
 });
 
 Deno.test("automatic bind keeps, moves or drops the listener as the LAN address changes", () => {

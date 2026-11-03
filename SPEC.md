@@ -164,6 +164,8 @@ Desktop GUI follow-up accepted on 2026-10-05: provide a standalone desktop recei
 
 Headless follow-up accepted on 2026-10-23: the desktop receiver runs with `--headless` (no window, no tray) and its loopback control listener offers `GET /status` and `POST /pairing` to other apps on the same PC, so they can draw the pairing QR themselves. The routes keep the activation listener's protections: 127.0.0.1 only, the bearer token from `desktop-instance.json`, and refusal of any request carrying `Origin`. Automatic binds follow the PC to a new LAN address with the same certificate and identity. The API is documented in [desktop-receiver.md](docs/desktop-receiver.md#local-control-api).
 
+Owned-receiver follow-up accepted on 2026-11-03: an app can run its own receiver, separate from the user's, with its own `--state`; `--exit-with-stdin` stops it when the app's end of stdin closes, crash included. The control API adds `GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start` and `POST /stop`, with the same protections, so a headless receiver is managed entirely by the app that owns it. Folder changes and launch-at-login stay with the window and the command line.
+
 ## 6. Pairing and transport security
 
 Use QR-based trust bootstrap:
