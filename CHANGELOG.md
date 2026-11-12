@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4
+
+- Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.
+- Say why pairing failed: an expired code (or a wrong phone clock), an unreachable PC, a certificate that doesn't match, a code already used, or too many attempts.
+- Swipe between a folder's photos in the viewer, which shows the photo's position (for example "2 / 24").
+- List photos newest first; folders stay in A→Z order above them.
+- Add an "Open with" button that opens the current photo in your gallery or any other viewer app.
+
 ## Receiver engine 1.3.0 (Node package)
 
 - The receiver engine (`receiver/src`) runs on Node as well as Deno: files through `node:fs`, and on Node an HTTPS listener from `node:https` and a pid-file state lock. On Deno the desktop app and the CLI keep `Deno.serve`, `flock` and Windows' write-through moves, unchanged.
@@ -11,14 +19,6 @@
 - The local control API manages the receiver without its window: `GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start` and `POST /stop`. See docs/desktop-receiver.md.
 - `--exit-with-stdin` lets the app that started the receiver own it: the receiver quits when that app's end of stdin closes, even if the app crashed.
 - Documented: each `--state` folder is a separate receiver, so another app can run its own next to the user's.
-
-## 1.0.4
-
-- Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.
-- Say why pairing failed: an expired code (or a wrong phone clock), an unreachable PC, a certificate that doesn't match, a code already used, or too many attempts.
-- Swipe between a folder's photos in the viewer, which shows the photo's position (for example "2 / 24").
-- List photos newest first; folders stay in A→Z order above them.
-- Add an "Open with" button that opens the current photo in your gallery or any other viewer app.
 
 ## Receiver 1.1.0
 
