@@ -59,8 +59,10 @@ class UiImprovementsTest {
         rule.onNodeWithTag("browser-list").performScrollToNode(hasText("Photo 30.jpg"))
         rule.onNodeWithText("Photo 30.jpg").performClick()
         rule.onNodeWithContentDescription("Close photo").assertIsDisplayed()
-        rule.waitUntil(10_000) { rule.onAllNodesWithContentDescription("Photo preview").fetchSemanticsNodes().isNotEmpty() }
-        rule.onNodeWithContentDescription("Photo preview").assertIsDisplayed()
+        // The viewer preloads the next photo off screen; check the one at the left edge (the photo being shown).
+        val onScreen = hasContentDescription("Photo preview") and SemanticsMatcher("starts at the left edge") { kotlin.math.abs(it.boundsInRoot.left) < 1f }
+        rule.waitUntil(10_000) { rule.onAllNodes(onScreen).fetchSemanticsNodes().isNotEmpty() }
+        rule.onNode(onScreen).assertIsDisplayed()
         rule.onNodeWithContentDescription("Close photo").performClick()
         rule.onNodeWithText("Photo 30.jpg").assertIsDisplayed()
     }
