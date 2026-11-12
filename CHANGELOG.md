@@ -16,6 +16,9 @@
 
 - Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.
 - Say why pairing failed: an expired code (or a wrong phone clock), an unreachable PC, a certificate that doesn't match, a code already used, or too many attempts.
+- Swipe between a folder's photos in the viewer, which shows the photo's position (for example "2 / 24").
+- List photos newest first; folders stay in A→Z order above them.
+- Add an "Open with" button that opens the current photo in your gallery or any other viewer app.
 
 ## Receiver 1.1.0
 

@@ -40,7 +40,7 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
     var folder by remember(selectedRoot) { mutableStateOf(selectedRoot?.let { DocumentFile.fromTreeUri(context, Uri.parse(it)) }) }
     var stack by remember(selectedRoot) { mutableStateOf(listOf<DocumentFile>()) }
     var search by rememberSaveable(selectedRoot) { mutableStateOf("") }
-    var selected by remember { mutableStateOf<BrowserFile?>(null) }
+    var viewing by remember { mutableStateOf<Pair<List<BrowserFile>, Int>?>(null) }
     var entries by remember(folder) { mutableStateOf<List<BrowserFile>?>(null) }
     var readFailed by remember(folder) { mutableStateOf(false) }
     var refresh by remember { mutableIntStateOf(0) }
@@ -62,8 +62,9 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
         val result = withContext(Dispatchers.IO) { runCatching {
             val current = folder ?: return@runCatching emptyList()
             check(current.exists() && current.canRead())
-            current.listFiles().map { BrowserFile(it, it.name.orEmpty(), it.isDirectory, it.type == "image/jpeg") }
-                .sortedWith(compareBy<BrowserFile> { !it.directory }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name })
+            // Folders A→Z, then files newest first (capture names start with yyyyMMdd_HHmmss).
+            val (folders, files) = current.listFiles().map { BrowserFile(it, it.name.orEmpty(), it.isDirectory, it.type == "image/jpeg") }.partition { it.directory }
+            folders.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name }) + files.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it.name })
         } }
         entries = result.getOrDefault(emptyList()); readFailed = result.isFailure
     }
@@ -76,7 +77,7 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
         Text(stringResource(R.string.folders), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         val roots = remember(root, captures) { (listOfNotNull(root) + captures.map { it.baseTreeUri }).distinct() }
         if (roots.size > 1) LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(roots, key = { it }) { r -> FilterChip(selected = r == selectedRoot, onClick = { selectedRoot = r; selected = null; stack = emptyList() }, label = { Text(treeLabel(r)) }) }
+            items(roots, key = { it }) { r -> FilterChip(selected = r == selectedRoot, onClick = { selectedRoot = r; viewing = null; stack = emptyList() }, label = { Text(treeLabel(r)) }) }
         }
         SearchField(search, { search = it }, stringResource(R.string.search_files))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -92,7 +93,7 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
             items(visible, key = { it.uri }) { file ->
                 Surface(onClick = {
                     if (file.directory) { folder?.let { stack = stack + it }; folder = file.document; search = "" }
-                    else if (file.jpeg) selected = file
+                    else if (file.jpeg) { val photos = visible.filter { it.jpeg }; viewing = photos to photos.indexOf(file) }
                 }, enabled = file.directory || file.jpeg, color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Line)) {
                     Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         GlyphIcon(if (file.directory) Glyph.FOLDER else Glyph.PHOTO, tint = Accent)
@@ -104,12 +105,13 @@ private data class BrowserFile(val document: DocumentFile, val name: String, val
         }
     }
     val shareTitle = stringResource(R.string.share)
-    selected?.let { photo ->
-        PhotoViewer(photo.uri, photo.name, onClose = { selected = null }, onShare = {
+    viewing?.let { (photos, start) ->
+        val viewerPhotos = remember(photos) { photos.map { ViewerPhoto(it.uri, it.name) } }
+        PhotoViewer(viewerPhotos, start, onClose = { viewing = null }, onShare = { photo ->
             runCatching { context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
                 type = "image/jpeg"; val uri = Uri.parse(photo.uri); putExtra(Intent.EXTRA_STREAM, uri)
                 clipData = ClipData.newRawUri("photo", uri); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }, shareTitle)) }.onFailure { failed = true }
-        }, onExport = { exportSource = photo; export.launch(photo.name) })
+        }, onExport = { photo -> exportSource = photos.first { it.uri == photo.uri }; export.launch(photo.name) })
     }
 }

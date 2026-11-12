@@ -64,6 +64,32 @@ class UiImprovementsTest {
         rule.onNodeWithContentDescription("Close photo").performClick()
         rule.onNodeWithText("Photo 30.jpg").assertIsDisplayed()
     }
+    @Test fun photosAreNewestFirstAndTheViewerSwipesBetweenThem() {
+        val directory = File(app.filesDir, "test-documents").apply { mkdirs() }
+        File(directory, "Album").mkdirs()
+        listOf("20260101_090000_000_a.jpg", "20260102_090000_000_b.jpg", "20260103_090000_000_c.jpg").forEach { name ->
+            InstrumentationRegistry.getInstrumentation().context.assets.open("photo.jpg").use { input -> File(directory, name).outputStream().use { input.copyTo(it) } }
+        }
+        rule.activityRule.scenario.onActivity { activity ->
+            ViewModelProvider(activity)[CameraModel::class.java].apply { selectRoot(tree); screen = "browser" }
+        }
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("20260101_090000_000_a.jpg").fetchSemanticsNodes().isNotEmpty() }
+        fun top(name: String) = rule.onNodeWithText(name).fetchSemanticsNode().boundsInRoot.top
+        org.junit.Assert.assertTrue("Folders stay above files", top("Album") < top("20260103_090000_000_c.jpg"))
+        org.junit.Assert.assertTrue("Newest photo first", top("20260103_090000_000_c.jpg") < top("20260102_090000_000_b.jpg"))
+        org.junit.Assert.assertTrue("Oldest photo last", top("20260102_090000_000_b.jpg") < top("20260101_090000_000_a.jpg"))
+        rule.onNodeWithText("20260103_090000_000_c.jpg").performClick()
+        rule.onNodeWithText("1 / 3").assertIsDisplayed()
+        rule.onNodeWithText("Open with").assertIsDisplayed()
+        rule.onNodeWithTag("photo-pager").performTouchInput { swipeLeft() }
+        rule.waitUntil(5_000) { rule.onAllNodesWithText("2 / 3").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithTag("photo-pager").performTouchInput { swipeLeft() }
+        rule.waitUntil(5_000) { rule.onAllNodesWithText("3 / 3").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithTag("photo-pager").performTouchInput { swipeRight() }
+        rule.waitUntil(5_000) { rule.onAllNodesWithText("2 / 3").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithContentDescription("Close photo").performClick()
+        rule.onNodeWithText("2 / 3").assertDoesNotExist()
+    }
     @Test fun qrPairingADifferentPcOffersReplacementWithoutResettingTheApp() {
         val old = Receiver("old-pc", "https://192.168.1.2:8443", "a".repeat(64), "old-token")
         val next = Receiver("new-pc", "https://192.168.1.3:8443", "b".repeat(64), "new-token")

@@ -23,8 +23,11 @@
     <string name="photo_preview">Photo preview</string>
     <string name="browser_help">Photos in the selected tree can be opened by other apps and survive uninstall. Private staging and metadata do not. Earlier roots stay accessible while their grants remain valid.</string>
     <string name="up_folder">Parent folder</string>
-    <string name="share">Share photo</string>
-    <string name="export">Export photo</string>
+    <string name="share">Share</string>
+    <string name="export">Export</string>
+    <string name="open_with">Open with</string>
+    <string name="open_failed">No app on this phone can open this photo.</string>
+    <string name="photo_position">%1$d / %2$d</string>
     <string name="export_failed">Export failed. Check destination access and free space.</string>
     <string name="storage_heading">Local storage</string>
     <string name="base_help">Changing this base applies to new sessions. Existing captures keep their original root; old permissions are retained. Regrant the same old folder to recover pending saves.</string>
