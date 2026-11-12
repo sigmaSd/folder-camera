@@ -30,5 +30,13 @@
   "folder-camera-1.0.3.aab": {
     "bytes": 5961193,
     "sha256": "dce4153cefcfed677012b90ea50501fdacaaca9105416b973d89b8a170f6c424"
+  },
+  "folder-camera-1.0.4.apk": {
+    "bytes": 2787510,
+    "sha256": "042e2787df308e93815e9f10201322423daab6a9d34442997fb6ae66eee0d5d5"
+  },
+  "folder-camera-1.0.4.aab": {
+    "bytes": 6040012,
+    "sha256": "838c3ff0417a9e405fc0088e85b78fc79a7c51ed05f5c0c18671f0c0a3b9f3da"
   }
 }

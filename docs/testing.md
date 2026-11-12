@@ -1,5 +1,11 @@
 # Verification and acceptance checklist
 
+## Swipeable photo viewer and Open with — Android 1.0.4, 2026-11-12
+
+The folder browser lists folders A→Z, then files newest first (capture names start with `yyyyMMdd_HHmmss`). Tapping a photo opens a viewer that pages through the folder's photos, or the current search results, and shows the position. Share, Export and "Open with" act on the photo on screen; "Open with" sends `ACTION_VIEW` with a read grant to the user's viewer app. `UiImprovementsTest.photosAreNewestFirstAndTheViewerSwipesBetweenThem` covers the order, swiping both ways and closing.
+
+Release source `6864045514c54f3b73277f4ef32eedf7c4f8a0d1` passes host tests, lint and [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43204109715). Its first device run failed only because an older test expected exactly one preview while the pager preloads the next page; after test-only fixes, [device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43238771875) ran on `23c3a7a`. The F-Droid build image, scans and reproducibility results are in [release/STATUS.md](../release/STATUS.md).
+
 ## Desktop receiver download link — Android 1.0.3, 2026-10-18
 
 Settings → PC sync has a persistent Get desktop receiver button and brief installation/pairing instructions, visible before pairing. The link opens `https://sigmasd.github.io/folder-camera/#desktop-downloads`; the live website's destination anchor was verified.

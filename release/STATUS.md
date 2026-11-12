@@ -1,6 +1,17 @@
 # Current release status
 
-Updated 2026-11-03 (Africa/Tunis).
+Updated 2026-11-12 (Africa/Tunis).
+
+## Android 1.0.4 release
+
+- [Android 1.0.4/versionCode 8 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.4) as a stable release. The folder browser lists photos newest first, the viewer swipes between a folder's photos and shows their position, and "Open with" hands the current photo to the user's gallery or viewer app. It also includes the VPN fallback route for pairing and transfers and specific pairing errors.
+- Source/tag: `6864045514c54f3b73277f4ef32eedf7c4f8a0d1`. Production app ID and signing certificate are retained.
+- Public APK: 2,787,510 bytes; SHA-256 `042e2787df308e93815e9f10201322423daab6a9d34442997fb6ae66eee0d5d5`. AAB (upload key, not published): 6,040,012 bytes; SHA-256 `838c3ff0417a9e405fc0088e85b78fc79a7c51ed05f5c0c18671f0c0a3b9f3da`.
+- Host tests and lint pass; [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43204109715) passes on the tag. [Device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43238771875) ran on `23c3a7a`, which differs from the tag only in instrumentation-test fixes (the old viewer test did not expect the pager's preloaded off-screen page).
+- The canonical APK was built with the official F-Droid `buildserver` image, now `sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac` (JDK 21.0.12.1, Python 3.13.5, Gradle 9.4.0): the earlier pinned digest is no longer served by GitLab and the local copy had been pruned. Source and binary scans pass. A second clean build is byte-identical, and the developer signature copied onto it reproduces the signed APK exactly. Production signature/manifest/legal assets and 16-KB ZIP/ELF alignment pass.
+- F-Droid detection, build and index publication are pending.
+
+## Receiver 1.2.0 release
 
 - [Desktop receiver 1.2.0 is published](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.2.0) with all six native installers, SHA256SUMS and a build manifest. Its control API manages phones, arrivals and listening (`GET /devices`, `POST /devices/<id>/revoke`, `GET /arrivals`, `POST /start`, `POST /stop`), and `--exit-with-stdin` ties a receiver to the app that started it. The site's downloads now point to 1.2.0.
 - Source/tag: `365e89947d41ab2b449fdd942fefdc0300da203e`. [Desktop acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/41609031356) passes on all six targets. The installers were attached from that run by [the attach workflow](https://github.com/sigmaSd/folder-camera/actions/runs/41612882085), after matching the published SHA256SUMS. The CI Linux x64 AppImage was also run headless with `--exit-with-stdin` on Fedora 44: every control route answered as documented, and it exited cleanly when its stdin closed. In about 40 exits, 2 took longer: once more than 10 s, once 16 s ending in a crash (exit 139), both after the instance file was removed; not reproduced in 30 later runs.
@@ -9,7 +20,7 @@ Updated 2026-11-03 (Africa/Tunis).
 
 - [Desktop receiver 1.1.0 is published](https://github.com/sigmaSd/folder-camera/releases/tag/receiver-v1.1.0) with all six native installers, SHA256SUMS and a build manifest. It adds `--headless`, the loopback control API (`GET /status`, `POST /pairing`) and following the PC to a new LAN address. The site's downloads now point to 1.1.0.
 - Source/tag: `1e81f3acf2549f1a1272eecc5e4605ab14e0a7a5`. [Desktop acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/40029648282) passes on all six targets; the Apple Silicon job passed on its second attempt after its first DMG startup timed out at 60 s, while the same build's directory startup had passed. Published asset digests match the accepted artifacts. The CI Linux x64 AppImage was also run headless on Fedora 44, where `GET /status` and `POST /pairing` returned a valid code.
-- Android 1.0.4/versionCode 8 (VPN fallback route for pairing and transfers, specific pairing errors) was first prepared on the same source, where [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/40029648172) passed and device acceptance passed on Android 16 4-KB and 16-KB images (the Android 17 emulator still does not become ready). 1.0.4 now also includes the swipeable, newest-first photo viewer with "Open with"; it is tagged `v1.0.4` on that later source, whose CI and device acceptance must pass again. It is not yet signed or published.
+- Android 1.0.4/versionCode 8 was first prepared on the same source ([Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/40029648172) and Android 16 device acceptance passed there). It was released later from a newer source; see "Android 1.0.4 release" above.
 
 ## Android 1.0.3 release
 
