@@ -1,6 +1,15 @@
 # Current release status
 
-Updated 2026-11-12 (Africa/Tunis).
+Updated 2026-11-13 (Africa/Tunis).
+
+## Android 1.0.5 release
+
+- [Android 1.0.5/versionCode 9 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.5) as a stable release. A new install opens the system folder picker by itself in Pictures/FolderCamera (created on Android 11 and later, Pictures otherwise), so one tap sets the base directory; "Change" starts there too until a folder is chosen.
+- Source/tag: `f8e5a47b5a1444825afbd1322f195a84e281f718`. Production app ID and signing certificate are retained.
+- Public APK: 2,787,510 bytes; SHA-256 `c753b49cc3f069d4d765b29866a5443d562c01629609dfb29066ef16b4db8654`. The public download matches the signed local artifact. AAB (upload key, not published): 6,040,700 bytes; SHA-256 `76eff4f95b92605dfc9f0aae166508825788b194e77a577c55cb5dfb68e4a67f`.
+- Host tests and lint pass; [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43489301588) and the [tagged release build](https://github.com/sigmaSd/folder-camera/actions/runs/43489301606) pass on the tag. On the tag, [device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43488667000) passed all instrumentation tests, but the release smoke test still expected the app instead of the new first-launch picker. After a test-only fix that takes the picker's default folder and checks the photo lands in Pictures/FolderCamera, [device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43491575956) passes on both Android 16 4-KB and 16-KB emulators on `d5e9ed2`. The Android 17 (37.2) job was cancelled without completing, the known emulator limitation; no Android 17 runtime success is claimed.
+- The canonical APK was built with the official F-Droid `buildserver` image `sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac`. Source and binary scans pass. A second clean build is byte-identical, and the developer signature copied onto it reproduces the signed APK exactly. Production signature/manifest/legal assets and 16-KB ZIP/ELF alignment pass.
+- F-Droid detection, build and index publication are pending.
 
 ## Android 1.0.4 release
 

@@ -1,5 +1,11 @@
 # Verification and acceptance checklist
 
+## First-launch folder picker — Android 1.0.5, 2026-11-13
+
+With no base directory, the app opens the system folder picker once per install, starting in Pictures/FolderCamera. The app creates that folder first where Android allows it without a permission (Android 11 and later); otherwise the picker starts in Pictures. `scripts/smoke_android_release.py` installs the optimized release fresh, accepts the picker's default folder, takes a photo and finds it under `/sdcard/Pictures/FolderCamera/Projects/Release`. Instrumented tests choose their own root, so `FolderCameraTestRunner` marks the prompt as already shown.
+
+Release source `f8e5a47b5a1444825afbd1322f195a84e281f718` passes host tests, lint and [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43489301588). Its device run passed every instrumentation test; only the release smoke test failed, because it expected the app instead of the new picker. After the test-only fix, [device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43491575956) passes on the Android 16 4-KB and 16-KB emulators on `d5e9ed2`. The F-Droid build image, scans and reproducibility results are in [release/STATUS.md](../release/STATUS.md).
+
 ## Swipeable photo viewer and Open with — Android 1.0.4, 2026-11-12
 
 The folder browser lists folders A→Z, then files newest first (capture names start with `yyyyMMdd_HHmmss`). Tapping a photo opens a viewer that pages through the folder's photos, or the current search results, and shows the position. Share, Export and "Open with" act on the photo on screen; "Open with" sends `ACTION_VIEW` with a read grant to the user's viewer app. `UiImprovementsTest.photosAreNewestFirstAndTheViewerSwipesBetweenThem` covers the order, swiping both ways and closing.
