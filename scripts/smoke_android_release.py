@@ -94,24 +94,19 @@ def launch():
     find('Choose a folder')
 
 try:
-    launch()
-    tap('Settings')
-    tap('Choose or regrant base directory')
-    # The current tree picker opens at device storage and exposes folders
-    # directly; there is no navigation-drawer button in this layout.
-    tap('Download')
-    tap('New folder')
-    fill('FolderCameraReleaseQA')
-    tap('OK')
+    # A fresh install opens the system folder picker by itself in Pictures/FolderCamera.
+    command('shell', 'monkey', '-p', PACKAGE, '-c', 'android.intent.category.LAUNCHER', '1')
+    find('FolderCamera')
     tap('USE THIS FOLDER')
     tap('ALLOW')
     find('Choose a folder')
+    find('FolderCamera')
     fill('Projects/Release', label='Relative folder path')
     tap('Start camera')
     tap('Take photo')
     find('1 saved locally', timeout=60)
     (work / 'camera.png').write_bytes(command('exec-out', 'screencap', '-p', binary=True))
-    paths = command('shell', 'find', '/sdcard/Download/FolderCameraReleaseQA', '-type', 'f').splitlines()
+    paths = command('shell', 'find', '/sdcard/Pictures/FolderCamera/Projects/Release', '-type', 'f').splitlines()
     photos = [path for path in paths if path.endswith('.jpg')]
     assert len(photos) == 1, photos
     jpeg = command('exec-out', 'cat', photos[0], binary=True)
@@ -121,8 +116,8 @@ try:
     tap('Folders')
     find('Projects')
     tap('Settings')
-    find('FolderCameraReleaseQA')
+    find('FolderCamera')
     assert command('exec-out', 'cat', photos[0], binary=True) == jpeg
-    print('PASS: optimized release initializes Room/WorkManager, selects a SAF folder, captures a real emulator JPEG, and retains settings/photos across restart')
+    print('PASS: optimized release initializes Room/WorkManager, selects the first-launch SAF folder (Pictures/FolderCamera), captures a real emulator JPEG, and retains settings/photos across restart')
 finally:
     (work / 'logcat.log').write_text(command('logcat', '-d'))
