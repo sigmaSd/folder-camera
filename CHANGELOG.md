@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- On first launch, open the folder picker in Pictures/FolderCamera (created on Android 11 and later), so one tap on "Use this folder" sets the base directory. "Change" starts there too until a folder is chosen.
+
 ## 1.0.4
 
 - Pair, check and send photos even when a VPN that can't be bypassed (such as Tailscale) stops the app from using the Wi-Fi network directly: the app retries once on the default route, with the same certificate pin.

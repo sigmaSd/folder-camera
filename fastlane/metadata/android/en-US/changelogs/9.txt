@@ -1,0 +1,1 @@
+On first launch, the folder picker opens in Pictures/FolderCamera, so one tap on "Use this folder" is enough to start taking photos.

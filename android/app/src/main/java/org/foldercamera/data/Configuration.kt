@@ -17,6 +17,10 @@ class Configuration(context: Context) {
     var root: String?
         get() = prefs.getString("root", null)
         set(value) { prefs.edit().putString("root", value).commit() }
+    /** Set once the first-launch folder picker has been shown, so it opens by itself only once per install. */
+    var folderPrompted: Boolean
+        get() = prefs.getBoolean("folderPrompted", false)
+        set(value) { prefs.edit().putBoolean("folderPrompted", value).commit() }
     var syncEnabled: Boolean
         get() = prefs.getBoolean("sync", false)
         set(value) { prefs.edit().putBoolean("sync", value).commit() }

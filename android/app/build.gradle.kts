@@ -10,9 +10,9 @@ android {
         applicationId = "io.github.sigmasd.foldercamera"
         minSdk = 26
         targetSdk = 37
-        versionCode = 8
-        versionName = "1.0.4"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = 9
+        versionName = "1.0.5"
+        testInstrumentationRunner = "org.foldercamera.FolderCameraTestRunner"
     }
     buildFeatures { compose = true; buildConfig = true }
     testOptions { unitTests.isIncludeAndroidResources = true }

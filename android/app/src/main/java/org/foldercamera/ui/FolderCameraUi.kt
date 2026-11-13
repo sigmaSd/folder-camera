@@ -24,6 +24,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.foldercamera.R
 import org.foldercamera.core.FolderPaths
 import org.foldercamera.data.Capture
+import org.foldercamera.storage.DefaultFolder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable fun FolderCameraUi(model: CameraModel) {
     val context = LocalContext.current
@@ -34,6 +38,16 @@ import org.foldercamera.data.Capture
             context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             model.selectRoot(uri.toString()); model.retryLocal()
         } catch (_: Exception) { model.error = "storage_permission" }
+    }
+    val scope = rememberCoroutineScope()
+    // With no base directory yet, the picker starts in Pictures/FolderCamera, so one tap on "Use this folder" sets it.
+    val openPicker: () -> Unit = {
+        val current = model.root?.let(Uri::parse)
+        if (current != null) picker.launch(current)
+        else scope.launch { picker.launch(withContext(Dispatchers.IO) { DefaultFolder.pickerStart() }) }
+    }
+    LaunchedEffect(Unit) {
+        if (model.root == null && !model.app.config.folderPrompted) { model.app.config.folderPrompted = true; openPicker() }
     }
     MaterialTheme(colorScheme = if (model.screen == "camera") CameraColors else AppColors) {
         if (model.screen == "camera") {
@@ -52,9 +66,9 @@ import org.foldercamera.data.Capture
                     model.error?.let { ErrorBanner(errorText(it)) { model.error = null } }
                     Box(Modifier.weight(1f).fillMaxWidth()) {
                         when (model.screen) {
-                            "destination" -> DestinationScreen(model, captures) { picker.launch(model.root?.let(Uri::parse)) }
+                            "destination" -> DestinationScreen(model, captures, openPicker)
                             "browser" -> BrowserScreen(model.root, captures)
-                            "settings" -> Box(Modifier.padding(horizontal = 20.dp)) { SettingsScreen(model, deliveries, captures) { picker.launch(model.root?.let(Uri::parse)) } }
+                            "settings" -> Box(Modifier.padding(horizontal = 20.dp)) { SettingsScreen(model, deliveries, captures, openPicker) }
                             "scanner" -> Column(Modifier.padding(20.dp)) { QrScreen(model) }
                         }
                     }
