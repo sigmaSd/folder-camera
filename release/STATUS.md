@@ -1,6 +1,15 @@
 # Current release status
 
-Updated 2026-11-13 (Africa/Tunis).
+Updated 2026-11-15 (Africa/Tunis).
+
+## Android 1.0.6 release
+
+- [Android 1.0.6/versionCode 10 is published](https://github.com/sigmaSd/folder-camera/releases/tag/v1.0.6) as a stable release. The system back button (or back gesture) in the camera returns to the folder choice, as the camera's back arrow does; before, it did nothing.
+- Source/tag: `613b293d486b145070c298660451c29c7d7b64a1`. Production app ID and signing certificate are retained.
+- Public APK: 2,787,510 bytes; SHA-256 `2b064d20b1082addf41ccbdfb2104631e0ef2e27b15f7962c09d481e7af103b9`. The public download matches the signed local artifact. AAB (upload key, not published): 6,040,210 bytes; SHA-256 `90482127db1faa7663f1eb4f73d189c6363b6ff0bbc4cf424361d78aab80fb52`.
+- [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43741229851) passes on the release source. [Device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43741229866) passes on the Android 16 4-KB and 16-KB emulators, including `GateUiTest`'s new system-back check. The Android 17 (37.2) job failed before any test ran (services and user storage were not ready within ten minutes), the known emulator limitation; no Android 17 runtime success is claimed.
+- The canonical APK was built with the official F-Droid `buildserver` image `sha256:1ea8bef1820bff06c2974e31b4fc4c79c364cd24231b86e71fa4b926797e0dac`; source and binary scans pass. The developer signature copied onto it reproduces the signed APK exactly. Production signature/manifest/legal assets and 16-KB ZIP/ELF alignment pass. No second clean build was compared for this release.
+- F-Droid detection, build and index publication are pending.
 
 ## Android 1.0.5 release
 

@@ -1,7 +1,7 @@
 {
   "android": {
-    "version": "1.0.5",
-    "url": "https://github.com/sigmasd/folder-camera/releases/download/v1.0.5/folder-camera-1.0.5.apk",
+    "version": "1.0.6",
+    "url": "https://github.com/sigmasd/folder-camera/releases/download/v1.0.6/folder-camera-1.0.6.apk",
     "candidate": false
   },
   "receiver": {

@@ -1,5 +1,11 @@
 # Verification and acceptance checklist
 
+## Back in the camera — Android 1.0.6, 2026-11-15
+
+The system back button in the camera returns to the folder choice with the current path filled in, as the camera's back arrow does; from the other screens, back still returns to the camera. `GateUiTest.confirmingAndCancelingDestinationChangesPreservesSessionAcrossRotation` presses back in the camera, checks the folder choice is shown without the shutter, and returns with "Return to camera".
+
+Release source `613b293d486b145070c298660451c29c7d7b64a1` passes host tests, lint and [Android/receiver CI](https://github.com/sigmaSd/folder-camera/actions/runs/43741229851), and [device acceptance](https://github.com/sigmaSd/folder-camera/actions/runs/43741229866) on the Android 16 4-KB and 16-KB emulators. The F-Droid build image, scans and reproducibility results are in [release/STATUS.md](../release/STATUS.md).
+
 ## First-launch folder picker — Android 1.0.5, 2026-11-13
 
 With no base directory, the app opens the system folder picker once per install, starting in Pictures/FolderCamera. The app creates that folder first where Android allows it without a permission (Android 11 and later); otherwise the picker starts in Pictures. `scripts/smoke_android_release.py` installs the optimized release fresh, accepts the picker's default folder, takes a photo and finds it under `/sdcard/Pictures/FolderCamera/Projects/Release`. Instrumented tests choose their own root, so `FolderCameraTestRunner` marks the prompt as already shown.
