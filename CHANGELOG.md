@@ -12,6 +12,10 @@
 - List photos newest first; folders stay in A→Z order above them.
 - Add an "Open with" button that opens the current photo in your gallery or any other viewer app.
 
+## Receiver engine 1.3.1 (Node package)
+
+- `package.json` names its entry point (`"main"`). Package managers then see the package as already built: pnpm installs it offline (an app's Flatpak build has no network), where 1.3.0's `prepack` script and no `main` made pnpm want to build it first.
+
 ## Receiver engine 1.3.0 (Node package)
 
 - The receiver engine (`receiver/src`) runs on Node as well as Deno: files through `node:fs`, and on Node an HTTPS listener from `node:https` and a pid-file state lock. On Deno the desktop app and the CLI keep `Deno.serve`, `flock` and Windows' write-through moves, unchanged.

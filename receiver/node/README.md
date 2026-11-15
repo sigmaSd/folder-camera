@@ -8,7 +8,7 @@ format, so a state folder moves between the desktop app, the CLI and an embeddin
 Releases are tarballs on GitHub (`receiver-engine-vX.Y.Z`), installed by URL:
 
 ```sh
-npm install https://github.com/sigmasd/folder-camera/releases/download/receiver-engine-v1.3.0/folder-camera-receiver-1.3.0.tgz
+npm install https://github.com/sigmasd/folder-camera/releases/download/receiver-engine-v1.3.1/folder-camera-receiver-1.3.1.tgz
 ```
 
 ```ts
