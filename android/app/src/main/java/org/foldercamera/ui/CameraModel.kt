@@ -49,7 +49,8 @@ class CameraModel(application: Application) : AndroidViewModel(application) {
         error = PortablePath.validate(path)
         if (error == null && root != null) { gate.confirm(root!!, path); app.config.lastPath = path; screen = "camera" }
     }
-    fun back() { gate.session?.let { path = it.path }; screen = if (gate.session != null) "camera" else "destination" }
+    // From the camera, back leaves for the folder choice, as the camera's own back button does; elsewhere it returns to the camera.
+    fun back() { gate.session?.let { path = it.path }; screen = if (gate.session != null && screen != "camera") "camera" else "destination" }
     fun selectRoot(uri: String) {
         root = uri; folderPaths = emptyList(); rootName = null; app.config.root = uri; gate.reset(); screen = "destination"; error = null; refreshFolders()
     }

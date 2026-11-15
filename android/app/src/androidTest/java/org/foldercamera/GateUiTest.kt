@@ -26,6 +26,11 @@ class GateUiTest {
         dismissKeyboard()
         rule.onNodeWithText("Start camera").assertIsDisplayed().performClick()
         rule.onNodeWithText("Projects/Job A/Before").assertExists()
+        rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
+        rule.onNodeWithText("Start camera").assertExists()
+        rule.onNodeWithContentDescription("Take photo").assertDoesNotExist()
+        rule.onNodeWithContentDescription("Return to camera").performClick()
+        rule.onNodeWithContentDescription("Take photo").assertExists()
         rule.onNodeWithContentDescription("Change folder").performClick()
         rule.onNodeWithText("Relative folder path").performTextClearance()
         rule.onNodeWithText("Relative folder path").performTextInput("New/صور")

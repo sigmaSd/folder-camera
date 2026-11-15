@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- The system back button (or back gesture) in the camera returns to the folder choice, as the camera's own back arrow does. It did nothing before.
+
 ## 1.0.5
 
 - On first launch, open the folder picker in Pictures/FolderCamera (created on Android 11 and later), so one tap on "Use this folder" sets the base directory. "Change" starts there too until a folder is chosen.

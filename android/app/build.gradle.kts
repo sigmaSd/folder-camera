@@ -10,8 +10,8 @@ android {
         applicationId = "io.github.sigmasd.foldercamera"
         minSdk = 26
         targetSdk = 37
-        versionCode = 9
-        versionName = "1.0.5"
+        versionCode = 10
+        versionName = "1.0.6"
         testInstrumentationRunner = "org.foldercamera.FolderCameraTestRunner"
     }
     buildFeatures { compose = true; buildConfig = true }
